@@ -14,7 +14,10 @@ st.set_page_config(
 # =========================
 # LOAD LOGO
 # =========================
-logo = Image.open("assets/logo.png")
+import os
+
+logo_path = os.path.join(os.path.dirname(__file__), "assets", "logo.png")
+logo = Image.open(logo_path)
 
 # =========================
 # SESSION STATE (MOCK LOGIN)
