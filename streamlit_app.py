@@ -1,208 +1,152 @@
 import streamlit as st
-import sqlite3
-import json
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-import io
+from datetime import datetime
 
+# =========================
+# PAGE CONFIG
+# =========================
 st.set_page_config(
-    page_title="AUSTRAC AI Compliance Platform",
-    page_icon="🏠",
+    page_title="Compliance Platform",
+    page_icon="📊",
     layout="wide"
 )
 
-# ---------------- DATABASE ----------------
-conn = sqlite3.connect("users.db", check_same_thread=False)
-c = conn.cursor()
+# =========================
+# SIMPLE SESSION STATE (MOCK LOGIN)
+# =========================
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
 
-c.execute("""
-CREATE TABLE IF NOT EXISTS users (
-    username TEXT PRIMARY KEY,
-    password TEXT
-)
-""")
+if "username" not in st.session_state:
+    st.session_state.username = ""
 
-c.execute("INSERT OR IGNORE INTO users VALUES ('admin', 'admin123')")
-c.execute("INSERT OR IGNORE INTO users VALUES ('agent1', 'agent123')")
-conn.commit()
-
+# =========================
+# MOCK AUTH FUNCTION
+# =========================
 def authenticate(username, password):
-    c.execute("SELECT * FROM users WHERE username=? AND password=?", (username, password))
-    return c.fetchone()
+    # Replace later with real auth system (Firebase / Supabase / etc.)
+    return username == "admin" and password == "admin"
 
-def add_user(username, password):
-    try:
-        c.execute("INSERT INTO users VALUES (?, ?)", (username, password))
-        conn.commit()
-        return True
-    except:
-        return False
+# =========================
+# SIDEBAR LOGIN / NAV
+# =========================
+with st.sidebar:
+    st.title("🔐 Access Portal")
 
-def get_users():
-    c.execute("SELECT username FROM users")
-    return c.fetchall()
+    if not st.session_state.authenticated:
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
 
-# ---------------- SESSION ----------------
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-    st.session_state.user = None
-
-# ---------------- LOGIN ----------------
-
-def login():
-    st.title("🏠 Compliance Platform")
-    st.caption("Secure access required")
-
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-
-    if st.button("Sign In"):
-        if authenticate(username, password):
-            st.session_state.logged_in = True
-            st.session_state.user = username
-            st.rerun()
-        else:
-            st.error("Invalid login credentials")
-
-# ---------------- AI ENGINE ----------------
-def analyze(text):
-    text = text.lower()
-
-    score = 0
-    flags = []
-    explanation = []
-
-    if "cash" in text:
-        score += 30
-        flags.append("Cash transaction")
-        explanation.append("Cash reduces traceability and increases AML risk.")
-
-    if "offshore" in text:
-        score += 25
-        flags.append("Offshore involvement")
-        explanation.append("Offshore entities obscure ownership structures.")
-
-    if "third party" in text:
-        score += 20
-        flags.append("Third-party payment")
-        explanation.append("Third-party payments may hide source of funds.")
-
-    if "urgent" in text:
-        score += 10
-        flags.append("Urgency pressure")
-        explanation.append("Urgency may indicate attempt to bypass checks.")
-
-    if "multiple deposits" in text:
-        score += 25
-        flags.append("Structured payments")
-        explanation.append("Splitting payments may indicate structuring.")
-
-    if score >= 50:
-        level = "HIGH RISK"
-    elif score >= 20:
-        level = "MEDIUM RISK"
-    else:
-        level = "LOW RISK"
-
-    return score, level, flags, explanation
-
-# ---------------- PDF GENERATOR ----------------
-def create_pdf(report_data):
-    buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=letter)
-
-    y = 750
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(50, y, "AUSTRAC Compliance Report")
-    y -= 40
-
-    c.setFont("Helvetica", 10)
-
-    for r in report_data:
-        c.drawString(50, y, f"Transaction {r['id']}")
-        y -= 15
-
-        c.drawString(60, y, f"Input: {r['input'][:80]}")
-        y -= 15
-
-        c.drawString(60, y, f"Score: {r['score']} | Level: {r['level']}")
-        y -= 15
-
-        c.drawString(60, y, f"Flags: {', '.join(r['flags'])}")
-        y -= 25
-
-        if y < 100:
-            c.showPage()
-            y = 750
-
-    c.save()
-    buffer.seek(0)
-    return buffer
-
-# ---------------- APP ----------------
-if not st.session_state.logged_in:
-    login()
-else:
-    st.sidebar.title("Admin Panel")
-    st.sidebar.write(f"User: {st.session_state.user}")
-
-    if st.sidebar.button("Logout"):
-        st.session_state.logged_in = False
-        st.session_state.user = None
-        st.rerun()
-
-    st.title("🏠 AUSTRAC AI Compliance Dashboard")
-
-    st.subheader("User Management")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        new_user = st.text_input("New Username")
-        new_pass = st.text_input("New Password", type="password")
-
-        if st.button("Create User"):
-            if add_user(new_user, new_pass):
-                st.success("User created")
+        if st.button("Login"):
+            if authenticate(username, password):
+                st.session_state.authenticated = True
+                st.session_state.username = username
+                st.success("Login successful")
             else:
-                st.error("User already exists")
+                st.error("Invalid credentials")
 
-    with col2:
-        st.write("Existing Users")
-        for u in get_users():
-            st.write("•", u[0])
+    else:
+        st.success(f"Logged in as {st.session_state.username}")
 
-    st.subheader("AI Analysis + PDF Export")
-
-    bulk_input = st.text_area("Enter transactions (one per line)")
-
-    if st.button("Run Analysis"):
-
-        lines = bulk_input.strip().split("\n")
-        results = []
-
-        for i, line in enumerate(lines, start=1):
-            score, level, flags, explanation = analyze(line)
-
-            results.append({
-                "id": i,
-                "input": line,
-                "score": score,
-                "level": level,
-                "flags": flags,
-                "explanation": explanation
-            })
-
-        st.subheader("Results")
-
-        for r in results:
-            st.write(r)
-
-        pdf_file = create_pdf(results)
-
-        st.download_button(
-            "Download PDF Report",
-            data=pdf_file,
-            file_name="austrac_compliance_report.pdf",
-            mime="application/pdf"
+        page = st.radio(
+            "Navigation",
+            ["Dashboard", "Run Check", "Reports", "Settings"]
         )
+
+        if st.button("Logout"):
+            st.session_state.authenticated = False
+            st.session_state.username = ""
+            st.rerun()
+
+# =========================
+# LOGIN GATE
+# =========================
+if not st.session_state.authenticated:
+    st.title("📊 Compliance Intelligence Platform")
+    st.write("Secure access required to continue.")
+    st.stop()
+
+# =========================
+# CORE PAGES
+# =========================
+
+def dashboard():
+    st.title("📊 Dashboard")
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("Active Checks", "12", "+2 today")
+    col2.metric("Risk Alerts", "3", "-1 today")
+    col3.metric("Reports Generated", "48", "+5 this week")
+
+    st.divider()
+
+    st.subheader("System Overview")
+    st.info("All systems operational. No critical compliance failures detected.")
+
+def run_check():
+    st.title("🧠 Run Compliance Check")
+
+    st.write("Enter property / transaction data below:")
+
+    with st.form("check_form"):
+        address = st.text_input("Property Address")
+        amount = st.number_input("Transaction Amount", min_value=0)
+        country = st.text_input("Country")
+        submit = st.form_submit_button("Run Analysis")
+
+    if submit:
+        st.info("Running AI compliance analysis...")
+
+        # Placeholder logic (replace with AI model later)
+        risk_score = min(100, int(amount / 1000))
+
+        st.success("Analysis Complete")
+
+        st.metric("Risk Score", f"{risk_score}/100")
+
+        if risk_score > 70:
+            st.error("High Risk Transaction Detected")
+        elif risk_score > 40:
+            st.warning("Medium Risk - Review Required")
+        else:
+            st.success("Low Risk Transaction")
+
+def reports():
+    st.title("📄 Reports")
+
+    st.write("Generated reports will appear here.")
+
+    sample_reports = [
+        {"id": "RPT-001", "date": "2026-06-30", "status": "Complete"},
+        {"id": "RPT-002", "date": "2026-06-29", "status": "Pending"},
+    ]
+
+    for r in sample_reports:
+        st.write(f"**{r['id']}** | {r['date']} | {r['status']}")
+
+def settings():
+    st.title("⚙️ Settings")
+
+    st.text_input("Organisation Name", value="My Company")
+    st.text_input("API Key (future integration)")
+    st.checkbox("Enable AI auto-analysis", value=True)
+
+    st.success("Settings saved automatically")
+
+# =========================
+# ROUTER
+# =========================
+if page == "Dashboard":
+    dashboard()
+elif page == "Run Check":
+    run_check()
+elif page == "Reports":
+    reports()
+elif page == "Settings":
+    settings()
+
+# =========================
+# FOOTER
+# =========================
+st.markdown("---")
+st.caption(f"© {datetime.now().year} Compliance Intelligence Platform | Secure SaaS Build")
