@@ -32,17 +32,17 @@ def init_db():
     """)
 
     # Cases table
-    c.execute("""
-    CREATE TABLE IF NOT EXISTS cases (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        property_id TEXT,
-        amount REAL,
-        risk_score INTEGER,
-        status TEXT,
-        created_at TEXT
-    )
-    """)
-
+   c.execute("""
+CREATE TABLE IF NOT EXISTS cases (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    property_id TEXT,
+    amount REAL,
+    risk_score INTEGER,
+    status TEXT,
+    created_at TEXT,
+    created_by TEXT
+)
+""")
     conn.commit()
     conn.close()
 
@@ -64,14 +64,14 @@ def log_action(user, action):
 # =========================
 # ADD CASE
 # =========================
-def add_case(property_id, amount, risk_score, status):
+def add_case(property_id, amount, risk_score, status, created_by):
     conn = get_conn()
     c = conn.cursor()
 
     c.execute("""
-        INSERT INTO cases (property_id, amount, risk_score, status, created_at)
-        VALUES (?, ?, ?, ?, ?)
-    """, (property_id, amount, risk_score, status, datetime.now().isoformat()))
+    INSERT INTO cases (property_id, amount, risk_score, status, created_at, created_by)
+    VALUES (?, ?, ?, ?, ?, ?)
+""", (property_id, amount, risk_score, status, datetime.now().isoformat(), created_by))
 
     conn.commit()
     conn.close()
