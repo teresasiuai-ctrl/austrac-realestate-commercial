@@ -304,3 +304,13 @@ with tab4:
 
     else:
         st.info("No audit logs yet.")
+
+# =========================
+# FOOTER
+# =========================
+st.divider()
+
+st.caption(
+    "© 2026 AUSTRAC Compliance SaaS Platform | Version 1.0 | "
+    "Demo Platform | Built with Streamlit"
+)
