@@ -106,11 +106,11 @@ with tab1:
 
         st.subheader("Risk Distribution")
 
-        st.bar_chart(df["Risk Score"])
+        st.bar_chart(df[["Risk Score"]])
 
         st.subheader("Transaction Volume")
 
-        st.line_chart(df["Amount"])
+        st.line_chart(df[["Amount"]])
 
     else:
         st.info("No data yet — run some risk checks first.")
@@ -129,23 +129,23 @@ with tab2:
 
         # SIMPLE FREE SCORING MODEL
         risk_score = min(100, int(amount / 5000))
-
         status = "HIGH" if risk_score > 70 else "LOW"
 
         add_case(
-    property_id,
-    amount,
-    risk_score,
-    status,
-    st.session_state.user
-)
+            property_id,
+            amount,
+            risk_score,
+            status,
+            st.session_state.user
+        )
+
         log_action(st.session_state.user, f"RISK_CHECK {property_id}")
 
         st.success("Case created successfully")
 
         st.metric("Risk Score", risk_score)
         st.write("Status:", status)
-
+        
 # =========================
 # CASES
 # =========================
