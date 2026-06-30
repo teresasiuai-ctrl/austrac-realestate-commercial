@@ -1,0 +1,103 @@
+import sqlite3
+from datetime import datetime
+import os
+
+# =========================
+# DATABASE PATH
+# =========================
+DB_PATH = os.path.join("database", "app.db")
+
+# =========================
+# CONNECT
+# =========================
+def get_conn():
+    os.makedirs("database", exist_ok=True)
+    return sqlite3.connect(DB_PATH, check_same_thread=False)
+
+# =========================
+# INIT DATABASE
+# =========================
+def init_db():
+    conn = get_conn()
+    c = conn.cursor()
+
+    # Audit log table
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS audit_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user TEXT,
+        action TEXT,
+        timestamp TEXT
+    )
+    """)
+
+    # Cases table
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS cases (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        property_id TEXT,
+        amount REAL,
+        risk_score INTEGER,
+        status TEXT,
+        created_at TEXT
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+# =========================
+# AUDIT LOG
+# =========================
+def log_action(user, action):
+    conn = get_conn()
+    c = conn.cursor()
+
+    c.execute(
+        "INSERT INTO audit_log (user, action, timestamp) VALUES (?, ?, ?)",
+        (user, action, datetime.now().isoformat())
+    )
+
+    conn.commit()
+    conn.close()
+
+# =========================
+# ADD CASE
+# =========================
+def add_case(property_id, amount, risk_score, status):
+    conn = get_conn()
+    c = conn.cursor()
+
+    c.execute("""
+        INSERT INTO cases (property_id, amount, risk_score, status, created_at)
+        VALUES (?, ?, ?, ?, ?)
+    """, (property_id, amount, risk_score, status, datetime.now().isoformat()))
+
+    conn.commit()
+    conn.close()
+
+# =========================
+# GET CASES
+# =========================
+def get_cases():
+    conn = get_conn()
+    c = conn.cursor()
+
+    c.execute("SELECT * FROM cases ORDER BY id DESC")
+    rows = c.fetchall()
+
+    conn.close()
+    return rows
+
+# =========================
+# GET LOGS
+# =========================
+def get_logs():
+    conn = get_conn()
+    c = conn.cursor()
+
+    c.execute("SELECT * FROM audit_log ORDER BY id DESC")
+    rows = c.fetchall()
+
+    conn.close()
+    return rows
