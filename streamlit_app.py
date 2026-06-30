@@ -1,6 +1,9 @@
 import streamlit as st
 import sqlite3
 import json
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+import io
 
 st.set_page_config(
     page_title="AUSTRAC AI Compliance Platform",
@@ -59,7 +62,7 @@ def login():
         else:
             st.error("Invalid credentials")
 
-# ---------------- AI RISK ENGINE ----------------
+# ---------------- AI ENGINE ----------------
 def analyze(text):
     text = text.lower()
 
@@ -70,36 +73,69 @@ def analyze(text):
     if "cash" in text:
         score += 30
         flags.append("Cash transaction")
-        explanation.append("Cash transactions reduce traceability and increase AML risk.")
+        explanation.append("Cash reduces traceability and increases AML risk.")
 
     if "offshore" in text:
         score += 25
         flags.append("Offshore involvement")
-        explanation.append("Offshore entities can obscure beneficial ownership structures.")
+        explanation.append("Offshore entities obscure ownership structures.")
 
     if "third party" in text:
         score += 20
         flags.append("Third-party payment")
-        explanation.append("Third-party payments may hide true source of funds.")
+        explanation.append("Third-party payments may hide source of funds.")
 
     if "urgent" in text:
         score += 10
         flags.append("Urgency pressure")
-        explanation.append("Urgent transactions may indicate attempt to bypass checks.")
+        explanation.append("Urgency may indicate attempt to bypass checks.")
 
     if "multiple deposits" in text:
         score += 25
         flags.append("Structured payments")
-        explanation.append("Splitting payments can indicate structuring to avoid detection thresholds.")
+        explanation.append("Splitting payments may indicate structuring.")
 
     if score >= 50:
-        level = "🔴 HIGH RISK"
+        level = "HIGH RISK"
     elif score >= 20:
-        level = "🟠 MEDIUM RISK"
+        level = "MEDIUM RISK"
     else:
-        level = "🟢 LOW RISK"
+        level = "LOW RISK"
 
     return score, level, flags, explanation
+
+# ---------------- PDF GENERATOR ----------------
+def create_pdf(report_data):
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=letter)
+
+    y = 750
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(50, y, "AUSTRAC Compliance Report")
+    y -= 40
+
+    c.setFont("Helvetica", 10)
+
+    for r in report_data:
+        c.drawString(50, y, f"Transaction {r['id']}")
+        y -= 15
+
+        c.drawString(60, y, f"Input: {r['input'][:80]}")
+        y -= 15
+
+        c.drawString(60, y, f"Score: {r['score']} | Level: {r['level']}")
+        y -= 15
+
+        c.drawString(60, y, f"Flags: {', '.join(r['flags'])}")
+        y -= 25
+
+        if y < 100:
+            c.showPage()
+            y = 750
+
+    c.save()
+    buffer.seek(0)
+    return buffer
 
 # ---------------- APP ----------------
 if not st.session_state.logged_in:
@@ -115,7 +151,6 @@ else:
 
     st.title("🏠 AUSTRAC AI Compliance Dashboard")
 
-    # ---------------- USER MANAGEMENT ----------------
     st.subheader("User Management")
 
     col1, col2 = st.columns(2)
@@ -135,8 +170,7 @@ else:
         for u in get_users():
             st.write("•", u[0])
 
-    # ---------------- ANALYSIS ----------------
-    st.subheader("AI Compliance Analysis")
+    st.subheader("AI Analysis + PDF Export")
 
     bulk_input = st.text_area("Enter transactions (one per line)")
 
@@ -149,7 +183,6 @@ else:
             score, level, flags, explanation = analyze(line)
 
             results.append({
-                "user": st.session_state.user,
                 "id": i,
                 "input": line,
                 "score": score,
@@ -161,18 +194,13 @@ else:
         st.subheader("Results")
 
         for r in results:
-            with st.expander(f"{r['level']} - Transaction {r['id']}"):
-                st.write("Input:", r["input"])
-                st.write("Score:", r["score"])
-                st.write("Flags:", r["flags"])
+            st.write(r)
 
-                st.write("AI Explanation:")
-                for e in r["explanation"]:
-                    st.write("•", e)
+        pdf_file = create_pdf(results)
 
         st.download_button(
-            "Download AI Report",
-            json.dumps(results, indent=2),
-            file_name="austrac_ai_report.json",
-            mime="application/json"
+            "Download PDF Report",
+            data=pdf_file,
+            file_name="austrac_compliance_report.pdf",
+            mime="application/pdf"
         )
