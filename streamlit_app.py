@@ -48,19 +48,21 @@ if "logged_in" not in st.session_state:
     st.session_state.user = None
 
 # ---------------- LOGIN ----------------
+
 def login():
-    st.title("🔐 AUSTRAC Compliance Login")
+    st.title("🏠 Compliance Platform")
+    st.caption("Secure access required")
 
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
-    if st.button("Login"):
+    if st.button("Sign In"):
         if authenticate(username, password):
             st.session_state.logged_in = True
             st.session_state.user = username
             st.rerun()
         else:
-            st.error("Invalid credentials")
+            st.error("Invalid login credentials")
 
 # ---------------- AI ENGINE ----------------
 def analyze(text):
