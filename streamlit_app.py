@@ -143,7 +143,7 @@ with tab2:
 # =========================
 with tab3:
 
-    st.subheader("Case Management")
+    st.subheader("Case Management System")
 
     data = get_cases()
 
@@ -151,13 +151,44 @@ with tab3:
 
         df = pd.DataFrame(
             data,
-            columns=["ID", "Property", "Amount", "Risk Score", "Status", "Created", "User"]
+            columns=[
+                "ID",
+                "Property",
+                "Amount",
+                "Risk Score",
+                "Status",
+                "Created",
+                "User",
+                "Case Status"
+            ]
         )
+
+        # =========================
+        # FILTERS
+        # =========================
+        col1, col2 = st.columns(2)
+
+        status_filter = col1.selectbox(
+            "Filter Risk Level",
+            ["ALL", "HIGH", "LOW"]
+        )
+
+        case_filter = col2.selectbox(
+            "Filter Case Status",
+            ["ALL", "OPEN", "REVIEWING", "CLOSED"]
+        )
+
+        # Apply filters safely
+        if status_filter != "ALL":
+            df = df[df["Status"] == status_filter]
+
+        if case_filter != "ALL":
+            df = df[df["Case Status"] == case_filter]
 
         st.dataframe(df, use_container_width=True)
 
     else:
-        st.info("No cases yet.")
+        st.info("No cases yet. Run a risk check first.")
 
 # =========================
 # AUDIT LOG
