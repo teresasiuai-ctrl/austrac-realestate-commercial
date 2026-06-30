@@ -5,7 +5,6 @@ import pandas as pd
 
 from utils.auth import authenticate
 from utils.db import init_db, log_action, add_case, get_cases, get_logs
-
 # =========================
 # INIT DB
 # =========================
