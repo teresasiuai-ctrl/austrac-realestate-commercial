@@ -32,6 +32,9 @@ if "auth" not in st.session_state:
 
 if "user" not in st.session_state:
     st.session_state.user = ""
+    
+if "role" not in st.session_state:
+    st.session_state.role = "admin"
 
 # =========================
 # HEADER
@@ -85,16 +88,33 @@ with tab1:
     st.subheader("System Overview")
 
     cases = get_cases()
-    logs = get_logs()
 
     colA, colB, colC = st.columns(3)
 
     colA.metric("Total Cases", len(cases))
-    colB.metric("Audit Events", len(logs))
-    colC.metric("System Status", "ACTIVE")
+    colB.metric("System Status", "ACTIVE")
+    colC.metric("High Risk Cases", len([c for c in cases if c[3] > 70]))
 
-    st.info("Real-time AML / CTF monitoring system running (free SQLite version).")
+    st.divider()
 
+    if cases:
+
+        df = pd.DataFrame(
+            cases,
+            columns=["ID", "Property", "Amount", "Risk Score", "Status", "Created", "User"]
+        )
+
+        st.subheader("Risk Distribution")
+
+        st.bar_chart(df["Risk Score"])
+
+        st.subheader("Transaction Volume")
+
+        st.line_chart(df["Amount"])
+
+    else:
+        st.info("No data yet — run some risk checks first.")
+        
 # =========================
 # RISK ENGINE
 # =========================
@@ -112,7 +132,13 @@ with tab2:
 
         status = "HIGH" if risk_score > 70 else "LOW"
 
-        add_case(property_id, amount, risk_score, status)
+        add_case(
+    property_id,
+    amount,
+    risk_score,
+    status,
+    st.session_state.user
+)
         log_action(st.session_state.user, f"RISK_CHECK {property_id}")
 
         st.success("Case created successfully")
@@ -130,11 +156,14 @@ with tab3:
     data = get_cases()
 
     if data:
+
         df = pd.DataFrame(
             data,
-            columns=["ID", "Property", "Amount", "Risk Score", "Status", "Created"]
+            columns=["ID", "Property", "Amount", "Risk Score", "Status", "Created", "User"]
         )
+
         st.dataframe(df, use_container_width=True)
+
     else:
         st.info("No cases yet.")
 
