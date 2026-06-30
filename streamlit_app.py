@@ -3,7 +3,7 @@ import sqlite3
 import json
 
 st.set_page_config(
-    page_title="AUSTRAC Admin Dashboard",
+    page_title="AUSTRAC AI Compliance Platform",
     page_icon="🏠",
     layout="wide"
 )
@@ -19,10 +19,8 @@ CREATE TABLE IF NOT EXISTS users (
 )
 """)
 
-# default users
 c.execute("INSERT OR IGNORE INTO users VALUES ('admin', 'admin123')")
 c.execute("INSERT OR IGNORE INTO users VALUES ('agent1', 'agent123')")
-c.execute("INSERT OR IGNORE INTO users VALUES ('agent2', 'agent123')")
 conn.commit()
 
 def authenticate(username, password):
@@ -48,7 +46,7 @@ if "logged_in" not in st.session_state:
 
 # ---------------- LOGIN ----------------
 def login():
-    st.title("🔐 Admin Login")
+    st.title("🔐 AUSTRAC Login")
 
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
@@ -61,32 +59,38 @@ def login():
         else:
             st.error("Invalid credentials")
 
-# ---------------- RISK ENGINE ----------------
+# ---------------- AI RISK ENGINE ----------------
 def analyze(text):
     text = text.lower()
 
     score = 0
     flags = []
+    explanation = []
 
     if "cash" in text:
         score += 30
         flags.append("Cash transaction")
+        explanation.append("Cash transactions reduce traceability and increase AML risk.")
 
     if "offshore" in text:
         score += 25
         flags.append("Offshore involvement")
+        explanation.append("Offshore entities can obscure beneficial ownership structures.")
 
     if "third party" in text:
         score += 20
         flags.append("Third-party payment")
+        explanation.append("Third-party payments may hide true source of funds.")
 
     if "urgent" in text:
         score += 10
         flags.append("Urgency pressure")
+        explanation.append("Urgent transactions may indicate attempt to bypass checks.")
 
     if "multiple deposits" in text:
         score += 25
         flags.append("Structured payments")
+        explanation.append("Splitting payments can indicate structuring to avoid detection thresholds.")
 
     if score >= 50:
         level = "🔴 HIGH RISK"
@@ -95,21 +99,21 @@ def analyze(text):
     else:
         level = "🟢 LOW RISK"
 
-    return score, level, flags
+    return score, level, flags, explanation
 
 # ---------------- APP ----------------
 if not st.session_state.logged_in:
     login()
 else:
     st.sidebar.title("Admin Panel")
-    st.sidebar.write(f"Logged in as: {st.session_state.user}")
+    st.sidebar.write(f"User: {st.session_state.user}")
 
     if st.sidebar.button("Logout"):
         st.session_state.logged_in = False
         st.session_state.user = None
         st.rerun()
 
-    st.title("🏠 AUSTRAC Admin Dashboard")
+    st.title("🏠 AUSTRAC AI Compliance Dashboard")
 
     # ---------------- USER MANAGEMENT ----------------
     st.subheader("User Management")
@@ -128,12 +132,11 @@ else:
 
     with col2:
         st.write("Existing Users")
-        users = get_users()
-        for u in users:
+        for u in get_users():
             st.write("•", u[0])
 
     # ---------------- ANALYSIS ----------------
-    st.subheader("Compliance Checker")
+    st.subheader("AI Compliance Analysis")
 
     bulk_input = st.text_area("Enter transactions (one per line)")
 
@@ -143,7 +146,7 @@ else:
         results = []
 
         for i, line in enumerate(lines, start=1):
-            score, level, flags = analyze(line)
+            score, level, flags, explanation = analyze(line)
 
             results.append({
                 "user": st.session_state.user,
@@ -151,18 +154,25 @@ else:
                 "input": line,
                 "score": score,
                 "level": level,
-                "flags": flags
+                "flags": flags,
+                "explanation": explanation
             })
 
         st.subheader("Results")
 
         for r in results:
             with st.expander(f"{r['level']} - Transaction {r['id']}"):
-                st.write(r)
+                st.write("Input:", r["input"])
+                st.write("Score:", r["score"])
+                st.write("Flags:", r["flags"])
+
+                st.write("AI Explanation:")
+                for e in r["explanation"]:
+                    st.write("•", e)
 
         st.download_button(
-            "Download Report",
+            "Download AI Report",
             json.dumps(results, indent=2),
-            file_name="austrac_admin_report.json",
+            file_name="austrac_ai_report.json",
             mime="application/json"
         )
