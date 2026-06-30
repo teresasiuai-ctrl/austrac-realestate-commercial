@@ -1,184 +1,157 @@
 import streamlit as st
 import os
 from PIL import Image
+import pandas as pd
+
+from utils.auth import authenticate
+from utils.db import init_db, log_action, add_case, get_cases, get_logs
+
+# =========================
+# INIT DB
+# =========================
+init_db()
 
 # =========================
 # PAGE CONFIG
 # =========================
 st.set_page_config(
-    page_title="AUSTRAC Intelligence Platform",
+    page_title="AUSTRAC SaaS Platform",
     layout="wide"
 )
 
 # =========================
 # LOAD LOGO
 # =========================
-logo_path = os.path.join(os.path.dirname(__file__), "assets", "logo.png")
-logo = Image.open(logo_path)
+logo = Image.open(os.path.join("assets", "logo.png"))
 
 # =========================
 # SESSION STATE
 # =========================
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
+if "auth" not in st.session_state:
+    st.session_state.auth = False
 
-if "username" not in st.session_state:
-    st.session_state.username = ""
-
-# =========================
-# AUTH (DEMO ONLY)
-# =========================
-def authenticate(username, password):
-    return username == "admin" and password == "admin"
+if "user" not in st.session_state:
+    st.session_state.user = ""
 
 # =========================
-# HEADER (SAAS STYLE)
+# HEADER
 # =========================
-def render_header():
-    col1, col2, col3 = st.columns([1, 6, 2])
+col1, col2 = st.columns([1, 6])
 
-    with col1:
-        st.image(logo, width=90)
+with col1:
+    st.image(logo, width=90)
 
-    with col2:
-        st.title("AUSTRAC Intelligence Platform")
-        st.caption("AML / CTF Risk Monitoring & Real Estate Compliance Engine")
-
-    with col3:
-        if st.session_state.authenticated:
-            st.markdown(f"👤 **{st.session_state.username}**")
-            if st.button("Logout"):
-                st.session_state.authenticated = False
-                st.rerun()
-
-st.set_page_config(page_title="AUSTRAC Platform", layout="wide")
-
-render_header()
+with col2:
+    st.title("AUSTRAC Compliance SaaS Platform")
+    st.caption("AML / CTF Risk Intelligence Engine")
 
 st.divider()
 
 # =========================
-# LOGIN PAGE
+# LOGIN
 # =========================
-if not st.session_state.authenticated:
+if not st.session_state.auth:
 
-    st.subheader("🔐 Secure Login")
+    st.subheader("Secure Login")
 
-    col1, col2, col3 = st.columns([1,2,1])
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
 
-    with col2:
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
-
-        st.caption("Demo login: admin / admin")
-
-        if st.button("Login", use_container_width=True):
-            if authenticate(username, password):
-                st.session_state.authenticated = True
-                st.session_state.username = username
-                st.rerun()
-            else:
-                st.error("Invalid credentials")
+    if st.button("Login"):
+        if authenticate(username, password):
+            st.session_state.auth = True
+            st.session_state.user = username
+            log_action(username, "LOGIN")
+            st.rerun()
+        else:
+            st.error("Invalid login (use admin / admin)")
 
     st.stop()
 
+st.success(f"Logged in as {st.session_state.user}")
+
 # =========================
-# DASHBOARD TABS
+# TABS (NO SIDEBAR)
 # =========================
 tab1, tab2, tab3, tab4 = st.tabs(
-    ["📊 Overview", "🔍 Risk Engine", "📄 Reports", "⚙️ Settings"]
+    ["Dashboard", "Risk Engine", "Cases", "Audit Log"]
 )
 
 # =========================
-# OVERVIEW (SAAS DASHBOARD)
+# DASHBOARD
 # =========================
 with tab1:
 
     st.subheader("System Overview")
 
-    colA, colB, colC, colD = st.columns(4)
+    cases = get_cases()
+    logs = get_logs()
 
-    colA.metric("High Risk Alerts", "12", "+2")
-    colB.metric("Properties Monitored", "540", "+18")
-    colC.metric("Transactions Scanned", "1,284", "+93")
-    colD.metric("Compliance Score", "87%", "+3%")
+    colA, colB, colC = st.columns(3)
 
-    st.divider()
+    colA.metric("Total Cases", len(cases))
+    colB.metric("Audit Events", len(logs))
+    colC.metric("System Status", "ACTIVE")
 
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.info("📍 Live Monitoring Active")
-        st.write("System is scanning real estate transactions for AML/CTF risk patterns in real time.")
-
-    with col2:
-        st.warning("⚠️ Flagged Activity Queue")
-        st.write("3 new transactions require manual review.")
+    st.info("Real-time AML / CTF monitoring system running (free SQLite version).")
 
 # =========================
 # RISK ENGINE
 # =========================
 with tab2:
 
-    st.subheader("Risk Analysis Engine")
+    st.subheader("Risk Engine (Rule-Based)")
 
-    property_id = st.text_input("Property ID / Reference")
+    property_id = st.text_input("Property ID")
     amount = st.number_input("Transaction Amount", min_value=0)
 
-    col1, col2 = st.columns(2)
+    if st.button("Run Risk Check"):
 
-    with col1:
-        region = st.selectbox("Region", ["NSW", "VIC", "QLD", "WA", "SA"])
+        # SIMPLE FREE SCORING MODEL
+        risk_score = min(100, int(amount / 5000))
 
-    with col2:
-        risk_type = st.selectbox("Risk Type", ["Purchase", "Transfer", "Trust Structure", "Cash Payment"])
+        status = "HIGH" if risk_score > 70 else "LOW"
 
-    if st.button("Run Compliance Check", use_container_width=True):
+        add_case(property_id, amount, risk_score, status)
+        log_action(st.session_state.user, f"RISK_CHECK {property_id}")
 
-        st.info("Running AI risk model...")
+        st.success("Case created successfully")
 
-        st.progress(80)
-
-        st.success("Analysis Complete")
-
-        st.markdown("### 🧠 Risk Result")
-        st.error("High Risk Score: 82 / 100")
-
-        st.write("""
-        - ⚠️ Unusual transaction pattern detected  
-        - ⚠️ High-risk jurisdiction mapping  
-        - ⚠️ Potential structuring behavior  
-        """)
+        st.metric("Risk Score", risk_score)
+        st.write("Status:", status)
 
 # =========================
-# REPORTS
+# CASES
 # =========================
 with tab3:
 
-    st.subheader("Compliance Reports")
+    st.subheader("Case Management")
 
-    st.write("Generate and export AML / CTF compliance reports.")
+    data = get_cases()
 
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.button("Generate Report", use_container_width=True)
-
-    with col2:
-        st.button("Export PDF", use_container_width=True)
-
-    st.info("No reports generated yet.")
+    if data:
+        df = pd.DataFrame(
+            data,
+            columns=["ID", "Property", "Amount", "Risk Score", "Status", "Created"]
+        )
+        st.dataframe(df, use_container_width=True)
+    else:
+        st.info("No cases yet.")
 
 # =========================
-# SETTINGS
+# AUDIT LOG
 # =========================
 with tab4:
 
-    st.subheader("System Settings")
+    st.subheader("Audit Trail")
 
-    st.toggle("Enable Real-Time Monitoring", value=True)
-    st.toggle("Auto-Flag High Risk Transactions", value=True)
+    logs = get_logs()
 
-    st.selectbox("Risk Sensitivity", ["Low", "Medium", "High"])
-
-    st.button("Save Settings", use_container_width=True)
+    if logs:
+        df = pd.DataFrame(
+            logs,
+            columns=["ID", "User", "Action", "Timestamp"]
+        )
+        st.dataframe(df, use_container_width=True)
+    else:
+        st.info("No audit logs yet.")
