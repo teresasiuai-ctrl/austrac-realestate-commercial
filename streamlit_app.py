@@ -2,85 +2,80 @@ import streamlit as st
 import json
 
 st.set_page_config(
-    page_title="AUSTRAC Compliance Checker",
+    page_title="AUSTRAC Compliance Batch Checker",
     page_icon="🏠",
     layout="centered"
 )
 
-st.title("🏠 AUSTRAC Real Estate Compliance AI")
+st.title("🏠 AUSTRAC Batch Compliance Checker")
 
-user_input = st.text_area("Enter property or transaction details")
+st.write("Paste multiple transactions (one per line)")
+
+bulk_input = st.text_area("Transactions")
 
 def analyze(text):
     text = text.lower()
 
     score = 0
     flags = []
-    explanation = []
 
     if "cash" in text:
         score += 30
-        flags.append("Cash transaction detected")
-        explanation.append("Cash transactions increase money laundering risk due to reduced traceability.")
+        flags.append("Cash transaction")
 
     if "offshore" in text:
         score += 25
         flags.append("Offshore involvement")
-        explanation.append("Offshore entities may increase AML/CTF complexity.")
 
     if "third party" in text:
         score += 20
         flags.append("Third-party payment")
-        explanation.append("Third-party payments can obscure beneficial ownership.")
 
     if "urgent" in text:
         score += 10
         flags.append("Urgency pressure")
-        explanation.append("Urgency may indicate attempt to bypass due diligence.")
 
     if "multiple deposits" in text:
         score += 25
         flags.append("Structured payments")
-        explanation.append("Split payments may indicate structuring to avoid detection thresholds.")
 
     if score >= 50:
-        level = "🔴 HIGH RISK"
+        level = "HIGH"
     elif score >= 20:
-        level = "🟠 MEDIUM RISK"
+        level = "MEDIUM"
     else:
-        level = "🟢 LOW RISK"
+        level = "LOW"
 
-    return score, level, flags, explanation
+    return score, level, flags
 
 
-if st.button("Run Analysis"):
-    if not user_input.strip():
-        st.warning("Please enter details")
+if st.button("Run Batch Analysis"):
+    if not bulk_input.strip():
+        st.warning("Enter transactions first")
     else:
-        score, level, flags, explanation = analyze(user_input)
+        lines = bulk_input.strip().split("\n")
 
-        result = {
-            "risk_score": score,
-            "risk_level": level,
-            "flags": flags,
-            "explanation": explanation
-        }
+        results = []
 
-        st.subheader("Result")
-        st.write("Risk Level:", level)
-        st.write("Risk Score:", score)
+        for i, line in enumerate(lines, start=1):
+            score, level, flags = analyze(line)
 
-        st.subheader("Flags")
-        for f in flags:
-            st.write("•", f)
+            results.append({
+                "id": i,
+                "input": line,
+                "score": score,
+                "level": level,
+                "flags": flags
+            })
 
-        st.subheader("AI Explanation")
-        for e in explanation:
-            st.write("•", e)
+        st.subheader("Results")
+
+        for r in results:
+            st.write(r)
 
         st.download_button(
-            "Download Report",
-            json.dumps(result, indent=2),
-            file_name="austrac_report.json",
+            "Download Batch Report",
+            json.dumps(results, indent=2),
+            file_name="batch_austrac_report.json",
             mime="application/json"
         )
