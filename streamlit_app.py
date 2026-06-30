@@ -7,28 +7,39 @@ st.set_page_config(
     layout="wide"
 )
 
-# Header
-st.title("🏠 AUSTRAC Real Estate Compliance Platform")
-st.caption("Commercial-grade compliance risk analysis tool (MVP)")
+# ---------------- LOGIN ----------------
+USERS = {
+    "admin": "admin123",
+    "agent": "agent123"
+}
 
-# Layout
-col1, col2 = st.columns([2, 1])
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+    st.session_state.user = None
 
-with col1:
-    st.subheader("Transaction Input")
-    bulk_input = st.text_area(
-        "Enter transactions (one per line)",
-        height=250
-    )
+def login():
+    st.title("🔐 Login - AUSTRAC Compliance Platform")
 
-    run = st.button("Run Compliance Analysis")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
 
-with col2:
-    st.subheader("System Status")
-    st.success("Online")
-    st.info("Rule Engine Active")
-    st.warning("No AI API connected (free mode)")
+    if st.button("Login"):
+        if username in USERS and USERS[username] == password:
+            st.session_state.logged_in = True
+            st.session_state.user = username
+            st.success("Login successful")
+            st.rerun()
+        else:
+            st.error("Invalid credentials")
 
+def logout():
+    st.sidebar.write(f"Logged in as: {st.session_state.user}")
+    if st.sidebar.button("Logout"):
+        st.session_state.logged_in = False
+        st.session_state.user = None
+        st.rerun()
+
+# ---------------- RISK ENGINE ----------------
 def analyze(text):
     text = text.lower()
 
@@ -64,37 +75,46 @@ def analyze(text):
 
     return score, level, flags
 
+# ---------------- APP ----------------
+if not st.session_state.logged_in:
+    login()
+else:
+    st.title("🏠 AUSTRAC Compliance Dashboard")
+    logout()
 
-if run:
-    if not bulk_input.strip():
-        st.warning("Please enter transactions")
-    else:
-        lines = bulk_input.strip().split("\n")
+    st.write(f"Welcome, **{st.session_state.user}**")
 
-        results = []
+    bulk_input = st.text_area("Enter transactions (one per line)")
 
-        for i, line in enumerate(lines, start=1):
-            score, level, flags = analyze(line)
+    if st.button("Run Analysis"):
 
-            results.append({
-                "id": i,
-                "input": line,
-                "score": score,
-                "level": level,
-                "flags": flags
-            })
+        if not bulk_input.strip():
+            st.warning("Enter transactions")
+        else:
+            lines = bulk_input.strip().split("\n")
 
-        st.subheader("Results")
+            results = []
 
-        for r in results:
-            with st.expander(f"Transaction {r['id']} - {r['level']}"):
-                st.write("Input:", r["input"])
-                st.write("Score:", r["score"])
-                st.write("Flags:", r["flags"])
+            for i, line in enumerate(lines, start=1):
+                score, level, flags = analyze(line)
 
-        st.download_button(
-            "Download Full Report",
-            json.dumps(results, indent=2),
-            file_name="austrac_report.json",
-            mime="application/json"
-        )
+                results.append({
+                    "id": i,
+                    "input": line,
+                    "score": score,
+                    "level": level,
+                    "flags": flags
+                })
+
+            st.subheader("Results")
+
+            for r in results:
+                with st.expander(f"Transaction {r['id']} - {r['level']}"):
+                    st.write(r)
+
+            st.download_button(
+                "Download Report",
+                json.dumps(results, indent=2),
+                file_name="austrac_report.json",
+                mime="application/json"
+            )
