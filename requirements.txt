@@ -1,4 +1,5 @@
 flask
+streamlit
 openai
 python-dotenv
 requests
