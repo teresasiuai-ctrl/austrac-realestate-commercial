@@ -2,6 +2,15 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
+def load_system_prompt():
+    try:
+        with open("prompts/system_prompt.md", "r") as f:
+            return f.read()
+    except:
+        return "System prompt not found"
+
+SYSTEM_PROMPT = load_system_prompt()
+
 @app.route("/")
 def home():
     return jsonify({
@@ -20,9 +29,10 @@ def analyze():
 
     return jsonify({
         "status": "received",
+        "system_prompt_loaded": True,
         "analysis_type": "compliance-check",
         "input": data,
-        "result": "placeholder - AI engine not connected yet"
+        "note": "AI engine not connected yet"
     })
 
 if __name__ == "__main__":
