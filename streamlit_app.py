@@ -49,7 +49,7 @@ if "logged_in" not in st.session_state:
 
 # ---------------- LOGIN ----------------
 def login():
-    st.title("🔐 AUSTRAC Login")
+    st.title("🔐 AUSTRAC Compliance Login")
 
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
