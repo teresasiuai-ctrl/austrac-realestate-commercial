@@ -6,7 +6,7 @@ from PIL import Image
 # PAGE CONFIG
 # =========================
 st.set_page_config(
-    page_title="AUSTRAC Compliance Platform",
+    page_title="AUSTRAC Intelligence Platform",
     layout="wide"
 )
 
@@ -26,22 +26,34 @@ if "username" not in st.session_state:
     st.session_state.username = ""
 
 # =========================
-# AUTH FUNCTION (DEMO)
+# AUTH (DEMO ONLY)
 # =========================
 def authenticate(username, password):
     return username == "admin" and password == "admin"
 
 # =========================
-# HEADER (NO SIDEBAR)
+# HEADER (SAAS STYLE)
 # =========================
-col1, col2 = st.columns([1, 6])
+def render_header():
+    col1, col2, col3 = st.columns([1, 6, 2])
 
-with col1:
-    st.image(logo, width=120)
+    with col1:
+        st.image(logo, width=90)
 
-with col2:
-    st.title("AUSTRAC Compliance Intelligence Platform")
-    st.caption("AML / CTF Risk Monitoring System")
+    with col2:
+        st.title("AUSTRAC Intelligence Platform")
+        st.caption("AML / CTF Risk Monitoring & Real Estate Compliance Engine")
+
+    with col3:
+        if st.session_state.authenticated:
+            st.markdown(f"👤 **{st.session_state.username}**")
+            if st.button("Logout"):
+                st.session_state.authenticated = False
+                st.rerun()
+
+st.set_page_config(page_title="AUSTRAC Platform", layout="wide")
+
+render_header()
 
 st.divider()
 
@@ -50,77 +62,123 @@ st.divider()
 # =========================
 if not st.session_state.authenticated:
 
-    st.subheader("🔐 Login Required")
+    st.subheader("🔐 Secure Login")
 
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    col1, col2, col3 = st.columns([1,2,1])
 
-    if st.button("Login"):
-        if authenticate(username, password):
-            st.session_state.authenticated = True
-            st.session_state.username = username
-            st.rerun()
-        else:
-            st.error("Invalid credentials (use admin / admin)")
+    with col2:
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+
+        st.caption("Demo login: admin / admin")
+
+        if st.button("Login", use_container_width=True):
+            if authenticate(username, password):
+                st.session_state.authenticated = True
+                st.session_state.username = username
+                st.rerun()
+            else:
+                st.error("Invalid credentials")
 
     st.stop()
 
 # =========================
-# MAIN APP (AFTER LOGIN)
-# =========================
-st.success(f"Logged in as {st.session_state.username}")
-
-# =========================
-# TABS NAVIGATION (NO SIDEBAR)
+# DASHBOARD TABS
 # =========================
 tab1, tab2, tab3, tab4 = st.tabs(
-    ["Dashboard", "Run Check", "Reports", "Settings"]
+    ["📊 Overview", "🔍 Risk Engine", "📄 Reports", "⚙️ Settings"]
 )
 
 # =========================
-# DASHBOARD
+# OVERVIEW (SAAS DASHBOARD)
 # =========================
 with tab1:
-    st.subheader("📊 Dashboard Overview")
 
-    colA, colB, colC = st.columns(3)
+    st.subheader("System Overview")
 
-    colA.metric("High Risk Alerts", "12")
-    colB.metric("Properties Flagged", "5")
-    colC.metric("Transactions Reviewed", "128")
+    colA, colB, colC, colD = st.columns(4)
 
-    st.write("Real-time compliance monitoring dashboard.")
+    colA.metric("High Risk Alerts", "12", "+2")
+    colB.metric("Properties Monitored", "540", "+18")
+    colC.metric("Transactions Scanned", "1,284", "+93")
+    colD.metric("Compliance Score", "87%", "+3%")
+
+    st.divider()
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.info("📍 Live Monitoring Active")
+        st.write("System is scanning real estate transactions for AML/CTF risk patterns in real time.")
+
+    with col2:
+        st.warning("⚠️ Flagged Activity Queue")
+        st.write("3 new transactions require manual review.")
 
 # =========================
-# RUN CHECK
+# RISK ENGINE
 # =========================
 with tab2:
-    st.subheader("🔍 Run Compliance Check")
 
-    property_id = st.text_input("Property ID")
+    st.subheader("Risk Analysis Engine")
+
+    property_id = st.text_input("Property ID / Reference")
     amount = st.number_input("Transaction Amount", min_value=0)
 
-    if st.button("Run Analysis"):
-        st.info("Running AML / CTF risk model...")
-        st.success("Analysis complete (mock result)")
-        st.write("Risk Score: 78/100 (High Risk)")
+    col1, col2 = st.columns(2)
+
+    with col1:
+        region = st.selectbox("Region", ["NSW", "VIC", "QLD", "WA", "SA"])
+
+    with col2:
+        risk_type = st.selectbox("Risk Type", ["Purchase", "Transfer", "Trust Structure", "Cash Payment"])
+
+    if st.button("Run Compliance Check", use_container_width=True):
+
+        st.info("Running AI risk model...")
+
+        st.progress(80)
+
+        st.success("Analysis Complete")
+
+        st.markdown("### 🧠 Risk Result")
+        st.error("High Risk Score: 82 / 100")
+
+        st.write("""
+        - ⚠️ Unusual transaction pattern detected  
+        - ⚠️ High-risk jurisdiction mapping  
+        - ⚠️ Potential structuring behavior  
+        """)
 
 # =========================
 # REPORTS
 # =========================
 with tab3:
-    st.subheader("📄 Reports")
 
-    st.write("Generated compliance reports will appear here.")
+    st.subheader("Compliance Reports")
 
-    st.button("Generate Report")
+    st.write("Generate and export AML / CTF compliance reports.")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.button("Generate Report", use_container_width=True)
+
+    with col2:
+        st.button("Export PDF", use_container_width=True)
+
+    st.info("No reports generated yet.")
 
 # =========================
 # SETTINGS
 # =========================
 with tab4:
-    st.subheader("⚙️ Settings")
 
-    if st.button("Logout"):
-        st.session_state.authenticated = False
-        st.rerun()
+    st.subheader("System Settings")
+
+    st.toggle("Enable Real-Time Monitoring", value=True)
+    st.toggle("Auto-Flag High Risk Transactions", value=True)
+
+    st.selectbox("Risk Sensitivity", ["Low", "Medium", "High"])
+
+    st.button("Save Settings", use_container_width=True)
