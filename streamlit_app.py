@@ -5,6 +5,7 @@ import pandas as pd
 
 from utils.auth import authenticate
 from utils.db import init_db, log_action, add_case, get_cases, get_logs
+
 # =========================
 # INIT DB
 # =========================
@@ -31,9 +32,6 @@ if "auth" not in st.session_state:
 
 if "user" not in st.session_state:
     st.session_state.user = ""
-    
-if "role" not in st.session_state:
-    st.session_state.role = "admin"
 
 # =========================
 # HEADER
@@ -73,7 +71,7 @@ if not st.session_state.auth:
 st.success(f"Logged in as {st.session_state.user}")
 
 # =========================
-# TABS (NO SIDEBAR)
+# TABS
 # =========================
 tab1, tab2, tab3, tab4 = st.tabs(
     ["Dashboard", "Risk Engine", "Cases", "Audit Log"]
@@ -106,14 +104,11 @@ with tab1:
         st.subheader("Risk Distribution")
 
         st.bar_chart(df[["Risk Score"]])
-
-        st.subheader("Transaction Volume")
-
         st.line_chart(df[["Amount"]])
 
     else:
         st.info("No data yet — run some risk checks first.")
-        
+
 # =========================
 # RISK ENGINE
 # =========================
@@ -126,7 +121,6 @@ with tab2:
 
     if st.button("Run Risk Check"):
 
-        # SIMPLE FREE SCORING MODEL
         risk_score = min(100, int(amount / 5000))
         status = "HIGH" if risk_score > 70 else "LOW"
 
@@ -141,10 +135,9 @@ with tab2:
         log_action(st.session_state.user, f"RISK_CHECK {property_id}")
 
         st.success("Case created successfully")
-
         st.metric("Risk Score", risk_score)
         st.write("Status:", status)
-        
+
 # =========================
 # CASES
 # =========================
@@ -176,10 +169,13 @@ with tab4:
     logs = get_logs()
 
     if logs:
+
         df = pd.DataFrame(
             logs,
             columns=["ID", "User", "Action", "Timestamp"]
         )
+
         st.dataframe(df, use_container_width=True)
+
     else:
         st.info("No audit logs yet.")
