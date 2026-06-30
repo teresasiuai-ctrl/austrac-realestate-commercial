@@ -12,6 +12,24 @@ from utils.db import init_db, log_action, add_case, get_cases, get_logs
 init_db()
 
 # =========================
+# PAGE CONFIG (ALWAYS HERE)
+# =========================
+st.set_page_config(page_title="AUSTRAC SaaS Platform", layout="wide")
+
+# =========================
+# STEP 5 GOES HERE (SAFE AREA)
+# =========================
+# session_state
+# logo loading
+# header UI
+# etc
+
+# =========================
+# INIT DB
+# =========================
+init_db()
+
+# =========================
 # PAGE CONFIG
 # =========================
 st.set_page_config(
@@ -50,24 +68,66 @@ st.divider()
 # =========================
 # LOGIN
 # =========================
+
 if not st.session_state.auth:
 
-    st.subheader("Secure Login")
+    # =========================
+    # INVESTOR LANDING PAGE
+    # =========================
+    st.title("🏢 AUSTRAC Compliance Intelligence Platform")
 
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    st.markdown("""
+    ### AI-powered AML / CTF Risk Monitoring System
 
-    if st.button("Login"):
-        if authenticate(username, password):
-            st.session_state.auth = True
-            st.session_state.user = username
-            log_action(username, "LOGIN")
-            st.rerun()
-        else:
-            st.error("Invalid login (use admin / admin)")
+    This platform helps detect and manage suspicious property transactions
+    using real-time compliance workflows and risk scoring.
+
+    ---
+    
+    #### 🚀 Key Features
+    - Real-time risk scoring engine  
+    - Case management system (OPEN / REVIEWING / CLOSED)  
+    - Audit trail for compliance reporting  
+    - Dashboard analytics for monitoring trends  
+
+    ---
+    
+    #### 🧠 System Status
+    - ✔ Live risk engine  
+    - ✔ SQLite secure database  
+    - ✔ Audit logging enabled  
+    - ✔ SaaS architecture (Level 4)  
+    """)
+
+    st.divider()
+
+    # =========================
+    # DEMO LOGIN BOX
+    # =========================
+    col1, col2, col3 = st.columns([1, 2, 1])
+
+    with col2:
+
+        st.subheader("Secure Login")
+
+        st.info("Demo credentials: admin / admin")
+
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+
+        if st.button("Login"):
+
+            if authenticate(username, password):
+                st.session_state.auth = True
+                st.session_state.user = username
+                log_action(username, "LOGIN")
+                st.rerun()
+
+            else:
+                st.error("Invalid login")
 
     st.stop()
-
+   
 st.success(f"Logged in as {st.session_state.user}")
 
 # =========================
@@ -82,32 +142,66 @@ tab1, tab2, tab3, tab4 = st.tabs(
 # =========================
 with tab1:
 
-    st.subheader("System Overview")
+    st.subheader("📊 Compliance Overview Dashboard")
 
     cases = get_cases()
 
-    colA, colB, colC = st.columns(3)
+    total_cases = len(cases)
+    high_risk = len([c for c in cases if c[3] > 70])
+    open_cases = len([c for c in cases if c[7] == "OPEN"])
+    total_amount = sum([c[2] for c in cases]) if cases else 0
 
-    colA.metric("Total Cases", len(cases))
-    colB.metric("System Status", "ACTIVE")
-    colC.metric("High Risk Cases", len([c for c in cases if c[3] > 70]))
+    # =========================
+    # KPI CARDS
+    # =========================
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric("Total Cases", total_cases)
+    col2.metric("High Risk", high_risk)
+    col3.metric("Open Cases", open_cases)
+    col4.metric("Total Exposure ($)", f"${total_amount:,.0f}")
 
     st.divider()
 
+    # =========================
+    # VISUAL INSIGHTS
+    # =========================
     if cases:
+
+        import pandas as pd
 
         df = pd.DataFrame(
             cases,
-            columns=["ID", "Property", "Amount", "Risk Score", "Status", "Created", "User"]
+            columns=[
+                "ID",
+                "Property",
+                "Amount",
+                "Risk Score",
+                "Status",
+                "Created",
+                "User",
+                "Case Status"
+            ]
         )
 
-        st.subheader("Risk Distribution")
+        st.markdown("### 📈 Risk Analytics")
 
-        st.bar_chart(df[["Risk Score"]])
-        st.line_chart(df[["Amount"]])
+        colA, colB = st.columns(2)
+
+        with colA:
+            st.markdown("#### Risk Score Distribution")
+            st.bar_chart(df[["Risk Score"]])
+
+        with colB:
+            st.markdown("#### Transaction Volume")
+            st.line_chart(df[["Amount"]])
+
+        st.markdown("### 🧾 Latest Activity")
+
+        st.dataframe(df.head(10), use_container_width=True)
 
     else:
-        st.info("No data yet — run some risk checks first.")
+        st.info("No data available. Run a risk check to populate dashboard.")
 
 # =========================
 # RISK ENGINE
