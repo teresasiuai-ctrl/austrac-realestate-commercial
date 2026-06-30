@@ -1,17 +1,23 @@
 import streamlit as st
+from PIL import Image
 from datetime import datetime
 
 # =========================
 # PAGE CONFIG
 # =========================
 st.set_page_config(
-    page_title="Compliance Platform",
+    page_title="Compliance Intelligence Platform",
     page_icon="📊",
     layout="wide"
 )
 
 # =========================
-# SIMPLE SESSION STATE (MOCK LOGIN)
+# LOAD LOGO
+# =========================
+logo = Image.open("assets/logo.png")
+
+# =========================
+# SESSION STATE (MOCK LOGIN)
 # =========================
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
@@ -20,19 +26,22 @@ if "username" not in st.session_state:
     st.session_state.username = ""
 
 # =========================
-# MOCK AUTH FUNCTION
+# AUTH FUNCTION (TEMP)
 # =========================
 def authenticate(username, password):
-    # Replace later with real auth system (Firebase / Supabase / etc.)
     return username == "admin" and password == "admin"
 
 # =========================
-# SIDEBAR LOGIN / NAV
+# SIDEBAR
 # =========================
 with st.sidebar:
-    st.title("🔐 Access Portal")
+    st.image(logo, use_container_width=True)
+    st.markdown("### Compliance Intelligence Platform")
+    st.markdown("---")
 
     if not st.session_state.authenticated:
+        st.title("🔐 Login")
+
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
 
@@ -62,31 +71,27 @@ with st.sidebar:
 # =========================
 if not st.session_state.authenticated:
     st.title("📊 Compliance Intelligence Platform")
-    st.write("Secure access required to continue.")
+    st.write("Secure login required to access the system.")
     st.stop()
 
 # =========================
-# CORE PAGES
+# PAGES
 # =========================
-
 def dashboard():
     st.title("📊 Dashboard")
 
     col1, col2, col3 = st.columns(3)
 
-    col1.metric("Active Checks", "12", "+2 today")
-    col2.metric("Risk Alerts", "3", "-1 today")
-    col3.metric("Reports Generated", "48", "+5 this week")
+    col1.metric("Active Checks", "12", "+2")
+    col2.metric("Risk Alerts", "3", "-1")
+    col3.metric("Reports", "48", "+5")
 
     st.divider()
 
-    st.subheader("System Overview")
-    st.info("All systems operational. No critical compliance failures detected.")
+    st.info("System operational. No critical issues detected.")
 
 def run_check():
     st.title("🧠 Run Compliance Check")
-
-    st.write("Enter property / transaction data below:")
 
     with st.form("check_form"):
         address = st.text_input("Property Address")
@@ -95,41 +100,35 @@ def run_check():
         submit = st.form_submit_button("Run Analysis")
 
     if submit:
-        st.info("Running AI compliance analysis...")
+        st.info("Running analysis...")
 
-        # Placeholder logic (replace with AI model later)
         risk_score = min(100, int(amount / 1000))
-
-        st.success("Analysis Complete")
 
         st.metric("Risk Score", f"{risk_score}/100")
 
         if risk_score > 70:
-            st.error("High Risk Transaction Detected")
+            st.error("High Risk Transaction")
         elif risk_score > 40:
-            st.warning("Medium Risk - Review Required")
+            st.warning("Medium Risk Transaction")
         else:
             st.success("Low Risk Transaction")
 
 def reports():
     st.title("📄 Reports")
 
-    st.write("Generated reports will appear here.")
-
-    sample_reports = [
-        {"id": "RPT-001", "date": "2026-06-30", "status": "Complete"},
-        {"id": "RPT-002", "date": "2026-06-29", "status": "Pending"},
+    sample = [
+        {"id": "RPT-001", "status": "Complete"},
+        {"id": "RPT-002", "status": "Pending"}
     ]
 
-    for r in sample_reports:
-        st.write(f"**{r['id']}** | {r['date']} | {r['status']}")
+    for r in sample:
+        st.write(f"{r['id']} — {r['status']}")
 
 def settings():
     st.title("⚙️ Settings")
 
-    st.text_input("Organisation Name", value="My Company")
-    st.text_input("API Key (future integration)")
-    st.checkbox("Enable AI auto-analysis", value=True)
+    st.text_input("Organisation Name", "My Company")
+    st.checkbox("Enable AI Analysis", value=True)
 
     st.success("Settings saved automatically")
 
@@ -149,4 +148,4 @@ elif page == "Settings":
 # FOOTER
 # =========================
 st.markdown("---")
-st.caption(f"© {datetime.now().year} Compliance Intelligence Platform | Secure SaaS Build")
+st.caption(f"© {datetime.now().year} Compliance Intelligence Platform")
