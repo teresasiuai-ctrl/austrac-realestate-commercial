@@ -2,16 +2,32 @@ import streamlit as st
 import json
 
 st.set_page_config(
-    page_title="AUSTRAC Compliance Batch Checker",
+    page_title="AUSTRAC Compliance Platform",
     page_icon="🏠",
-    layout="centered"
+    layout="wide"
 )
 
-st.title("🏠 AUSTRAC Batch Compliance Checker")
+# Header
+st.title("🏠 AUSTRAC Real Estate Compliance Platform")
+st.caption("Commercial-grade compliance risk analysis tool (MVP)")
 
-st.write("Paste multiple transactions (one per line)")
+# Layout
+col1, col2 = st.columns([2, 1])
 
-bulk_input = st.text_area("Transactions")
+with col1:
+    st.subheader("Transaction Input")
+    bulk_input = st.text_area(
+        "Enter transactions (one per line)",
+        height=250
+    )
+
+    run = st.button("Run Compliance Analysis")
+
+with col2:
+    st.subheader("System Status")
+    st.success("Online")
+    st.info("Rule Engine Active")
+    st.warning("No AI API connected (free mode)")
 
 def analyze(text):
     text = text.lower()
@@ -40,18 +56,18 @@ def analyze(text):
         flags.append("Structured payments")
 
     if score >= 50:
-        level = "HIGH"
+        level = "🔴 HIGH RISK"
     elif score >= 20:
-        level = "MEDIUM"
+        level = "🟠 MEDIUM RISK"
     else:
-        level = "LOW"
+        level = "🟢 LOW RISK"
 
     return score, level, flags
 
 
-if st.button("Run Batch Analysis"):
+if run:
     if not bulk_input.strip():
-        st.warning("Enter transactions first")
+        st.warning("Please enter transactions")
     else:
         lines = bulk_input.strip().split("\n")
 
@@ -71,11 +87,14 @@ if st.button("Run Batch Analysis"):
         st.subheader("Results")
 
         for r in results:
-            st.write(r)
+            with st.expander(f"Transaction {r['id']} - {r['level']}"):
+                st.write("Input:", r["input"])
+                st.write("Score:", r["score"])
+                st.write("Flags:", r["flags"])
 
         st.download_button(
-            "Download Batch Report",
+            "Download Full Report",
             json.dumps(results, indent=2),
-            file_name="batch_austrac_report.json",
+            file_name="austrac_report.json",
             mime="application/json"
         )
