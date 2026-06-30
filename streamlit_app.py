@@ -1,4 +1,5 @@
 import streamlit as st
+import json
 
 st.set_page_config(
     page_title="AUSTRAC Compliance Checker",
@@ -7,7 +8,6 @@ st.set_page_config(
 )
 
 st.title("🏠 AUSTRAC Real Estate Compliance Checker")
-st.write("Free tool to identify basic transaction risk indicators (educational use only).")
 
 user_input = st.text_area("Enter property or transaction details")
 
@@ -35,32 +35,37 @@ def risk_score(text):
 
     if "multiple deposits" in text:
         score += 25
-        flags.append("Structured / split payments risk")
+        flags.append("Structured payments risk")
 
     if score >= 50:
-        level = "🔴 HIGH RISK"
+        level = "HIGH RISK"
     elif score >= 20:
-        level = "🟠 MEDIUM RISK"
+        level = "MEDIUM RISK"
     else:
-        level = "🟢 LOW RISK"
+        level = "LOW RISK"
 
     return score, level, flags
 
+
 if st.button("Check Risk"):
     if not user_input.strip():
-        st.warning("Please enter transaction details.")
+        st.warning("Enter details first")
     else:
         score, level, flags = risk_score(user_input)
 
+        result = {
+            "input": user_input,
+            "risk_score": score,
+            "risk_level": level,
+            "flags": flags
+        }
+
         st.subheader("Result")
-        st.write("Risk Level:", level)
-        st.write("Risk Score:", score)
+        st.write(result)
 
-        if flags:
-            st.subheader("Flags Detected")
-            for f in flags:
-                st.write("•", f)
-        else:
-            st.success("No major risk indicators detected.")
-
-st.caption("⚠️ This tool is for educational and compliance support only. Not legal advice.")
+        st.download_button(
+            label="Download Report (JSON)",
+            data=json.dumps(result, indent=2),
+            file_name="austrac_report.json",
+            mime="application/json"
+        )
