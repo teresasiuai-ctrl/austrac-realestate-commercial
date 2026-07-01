@@ -64,6 +64,7 @@ Python Application Layer (app.py)
 Business Logic Layer (Risk Engine + Case System)
 ↓
 SQLite Database (Cases + Audit Logs)
+
 ---
 
 ## 📁 Project Structure
@@ -79,7 +80,6 @@ assets/
 requirements.txt
 README.md
 
-
 ---
 
 ## ⚙️ Installation
@@ -94,12 +94,16 @@ source venv/bin/activate
 pip install -r requirements.txt
 streamlit run app.py
 
-🔐 Demo Login
+---
+
+## 🔐 Demo Login
 
 Username: admin
 Password: admin
 
-📊 Modules
+---
+
+## 📊 Modules
 Dashboard
 KPI overview
 Risk charts
@@ -119,7 +123,10 @@ Compliance Report Generator
 Generates draft SMR reports
 Structured compliance justification
 Internal review support
-⚠️ Disclaimer
+
+---
+
+## ⚠️ Disclaimer
 
 This system is a simulation tool only.
 
@@ -131,13 +138,17 @@ Guarantee compliance outcomes
 
 Users are responsible for regulatory compliance.
 
-🚀 Intended Use
+---
+
+## 🚀 Intended Use
 Real estate compliance training
 AML/CTF workflow simulation
 SaaS prototype demonstration
 Internal risk analysis support
 
-📌 Roadmap
+---
+
+## 📌 Roadmap
 Multi-user role system (Admin / Analyst)
 PDF export for SMR reports
 PostgreSQL cloud upgrade
