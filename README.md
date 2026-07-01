@@ -19,30 +19,51 @@ The AUSTRAC Real Estate AI Agent is a **SaaS-style compliance simulation platfor
 - Secure login system (demo credentials)
 - Session-based user tracking
 
+---
+
 ### ⚠️ Risk Engine
 - Real-time transaction risk scoring (0–100)
 - Automatic HIGH / LOW risk classification
 - Rule-based compliance logic
+- Auto-creates compliance cases
+
+---
 
 ### 📁 Case Management
-- Auto-created compliance cases
-- Status tracking (OPEN / REVIEWING / CLOSED)
-- Filtering and search tools
+- View all compliance cases
+- Track case status (OPEN / REVIEWING / CLOSED)
+- Filter by risk level
+- Search by Property ID
 
-### 📊 Compliance Dashboard
-- KPI monitoring (cases, risk, exposure)
-- Risk analytics and charts
-- Transaction overview
+---
+
+### 📊 Dashboard Analytics
+- KPI overview (cases, risk, exposure)
+- Risk distribution charts
+- Transaction insights
+
+---
 
 ### 🧾 Audit Logging
-- Logs all system actions
-- Tracks logins, risk checks, and case creation
-- Full compliance audit trail simulation
+- System activity tracking
+- Login history
+- Risk check history
+- Case creation history
 
-### 📄 Draft SMR Report Generator
-- Generates Suspicious Matter Report (SMR) drafts
+---
+
+### 📄 Compliance Report Generator
+- Generates draft SMR (Suspicious Matter Report)
 - Structured compliance reasoning
-- Internal review-ready format per case
+- Internal review support
+- Case-based report generation
+
+---
+
+## 🔐 Demo Login
+
+- Username: **admin**
+- Password: **admin**
 
 ---
 
@@ -55,36 +76,40 @@ The AUSTRAC Real Estate AI Agent is a **SaaS-style compliance simulation platfor
 - Automates draft reporting
 
 ---
+
 ## 🏗️ System Architecture
 
-Streamlit Frontend (UI Dashboard)
-↓
-Python Application Layer (app.py)
-↓
-Business Logic Layer (Risk Engine + Case System)
-↓
-SQLite Database (Cases + Audit Logs)
+**User Interface Layer**
+→ Streamlit Dashboard (Web App)
+
+**Application Layer**
+→ Python Backend (app.py)
+
+**Business Logic Layer**
+→ Risk Engine + Case Management System
+
+**Data Layer**
+→ SQLite Database (Cases + Audit Logs)
 
 ---
 
-## 📁 Project Structure
+### 📁 Project Structure
 
 app.py
 utils/
-├── db.py
-├── auth.py
+  ├── db.py
+  ├── auth.py
 
 assets/
-├── logo.png
+  ├── logo.png
 
 requirements.txt
 README.md
 
 ---
 
-## ⚙️ Installation
+### ⚙️ Installation & Run
 
-```bash
 git clone https://github.com/your-username/austrac-realestate-ai-agent.git
 cd austrac-realestate-ai-agent
 
@@ -95,31 +120,39 @@ pip install -r requirements.txt
 streamlit run app.py
 
 ---
-🔐 Demo Login
+
+### 🔐 Demo Login
+
 Username: admin
 Password: admin
-📊 Modules Overview
-📌 Dashboard
+
+---
+
+### 📊 Modules
+
+Dashboard
 KPI overview
-Risk analytics charts
+Risk charts
 Case summaries
-⚠️ Risk Engine
-Input Property ID + transaction amount
-Generates risk score (0–100)
-Automatically creates compliance case
-📁 Case Management
+Risk Engine
+Input property ID + transaction amount
+Generates risk score
+Creates compliance case automatically
+Case Management
 View all cases
-Filter by risk level and status
-Search by Property ID
-🧾 Audit Log
+Filter by risk and status
+Search by property ID
+Audit Log
 System activity tracking
-Login history
-Risk check history
-📄 Compliance Report Generator
+Login and action history
+Compliance Report Generator
 Generates draft SMR reports
 Structured compliance justification
 Internal review support
-⚠️ Disclaimer
+
+---
+
+### ⚠️ Disclaimer
 
 This system is a simulation tool only.
 
@@ -131,14 +164,20 @@ Guarantee compliance outcomes
 
 Users are responsible for regulatory compliance.
 
-🚀 Intended Use
+---
+
+### 🚀 Intended Use
+
 Real estate compliance training
 AML/CTF workflow simulation
 SaaS prototype demonstration
 Internal risk analysis support
-📌 Roadmap
-Multi-user roles (Admin / Analyst)
+
+---
+### 📌 Roadmap
+
+Multi-user role system (Admin / Analyst)
 PDF export for SMR reports
-PostgreSQL database upgrade
+PostgreSQL cloud upgrade
 AI-powered risk explanations
 Production SaaS deployment
