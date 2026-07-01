@@ -37,7 +37,17 @@ def init_db():
     conn.commit()
     conn.close()
 
-
+    # REPORTS TABLE
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS reports (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            case_id INTEGER,
+            property TEXT,
+            report_text TEXT,
+            created TEXT
+        )
+    """)
+    
 # =========================
 # LOG ACTION (FIXED)
 # =========================
@@ -52,7 +62,6 @@ def log_action(user, action):
 
     conn.commit()
     conn.close()
-
 
 # =========================
 # ADD CASE
@@ -80,7 +89,6 @@ def add_case(property_id, amount, risk_score, status, user):
     conn.commit()
     conn.close()
 
-
 # =========================
 # GET CASES
 # =========================
@@ -94,7 +102,6 @@ def get_cases():
     conn.close()
     return rows
 
-
 # =========================
 # GET LOGS
 # =========================
@@ -107,3 +114,47 @@ def get_logs():
 
     conn.close()
     return rows
+    
+# =========================
+# GET REPORTS
+# =========================
+def get_reports(case_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+
+    c.execute("""
+        SELECT *
+        FROM reports
+        WHERE case_id = ?
+        ORDER BY created DESC
+    """, (case_id,))
+
+    rows = c.fetchall()
+
+    conn.close()
+
+    return rows    
+# =========================
+# SAVE REPORT
+# =========================
+def save_report(case_id, property_id, report_text):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+
+    c.execute("""
+        INSERT INTO reports (
+            case_id,
+            property,
+            report_text,
+            created
+        )
+        VALUES (?, ?, ?, ?)
+    """, (
+        case_id,
+        property_id,
+        report_text,
+        datetime.now().isoformat()
+    ))
+
+    conn.commit()
+    conn.close()    
