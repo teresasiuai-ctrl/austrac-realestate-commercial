@@ -7,14 +7,17 @@ from utils.auth import authenticate
 from utils.db import init_db, log_action, add_case, get_cases, get_logs
 
 # =========================
-# INIT DB
+# PAGE CONFIG
 # =========================
-init_db()
+st.set_page_config(
+    page_title="AUSTRAC SaaS Platform",
+    layout="wide"
+)
 
 # =========================
-# PAGE CONFIG (ALWAYS HERE)
+# INIT DATABASE
 # =========================
-st.set_page_config(page_title="AUSTRAC SaaS Platform", layout="wide")
+init_db()
 
 # =========================
 # STEP 5 GOES HERE (SAFE AREA)
@@ -128,7 +131,30 @@ if not st.session_state.auth:
 
     st.stop()
    
-st.success(f"Logged in as {st.session_state.user}")
+# =========================
+# SIDEBAR
+# =========================
+with st.sidebar:
+
+    st.image(logo, width=120)
+
+    st.markdown("## AUSTRAC SaaS")
+
+    st.success(f"Logged in as **{st.session_state.user}**")
+
+    st.divider()
+
+    st.write("### Platform Status")
+    st.write("🟢 System Online")
+    st.write("🟢 Database Connected")
+    st.write("🟢 Audit Logging Active")
+
+    st.divider()
+
+    if st.button("Logout", use_container_width=True):
+        st.session_state.auth = False
+        st.session_state.user = ""
+        st.rerun()
 
 # =========================
 # TABS
@@ -142,7 +168,13 @@ tab1, tab2, tab3, tab4 = st.tabs(
 # =========================
 with tab1:
 
-    st.subheader("📊 Compliance Overview Dashboard")
+    st.title("Executive Compliance Dashboard")
+
+st.caption(
+    "Real-time AML / CTF monitoring for property transactions"
+)
+
+st.divider()
 
     cases = get_cases()
 
@@ -156,10 +188,25 @@ with tab1:
     # =========================
     col1, col2, col3, col4 = st.columns(4)
 
-    col1.metric("Total Cases", total_cases)
-    col2.metric("High Risk", high_risk)
-    col3.metric("Open Cases", open_cases)
-    col4.metric("Total Exposure ($)", f"${total_amount:,.0f}")
+   col1.metric(
+    "📁 Total Cases",
+    total_cases
+)
+
+col2.metric(
+    "🔴 High Risk Cases",
+    high_risk
+)
+
+col3.metric(
+    "🟡 Open Cases",
+    open_cases
+)
+
+col4.metric(
+    "💰 Total Exposure",
+    f"${total_amount:,.0f}"
+)
 
     st.divider()
 
@@ -194,11 +241,23 @@ with tab1:
 
         with colB:
             st.markdown("#### Transaction Volume")
-            st.line_chart(df[["Amount"]])
 
-        st.markdown("### 🧾 Latest Activity")
+chart_df = (
+    df.groupby("Status")["Amount"]
+      .sum()
+      .reset_index()
+      .set_index("Status")
+)
 
-        st.dataframe(df.head(10), use_container_width=True)
+st.bar_chart(chart_df)
+
+       st.markdown("### Recent Compliance Cases")
+
+       st.dataframe(
+    df.sort_values(by="Risk Score", ascending=False),
+    use_container_width=True,
+    hide_index=True
+)
 
     else:
         st.info("No data available. Run a risk check to populate dashboard.")
@@ -228,9 +287,20 @@ with tab2:
 
         log_action(st.session_state.user, f"RISK_CHECK {property_id}")
 
-        st.success("Case created successfully")
-        st.metric("Risk Score", risk_score)
-        st.write("Status:", status)
+       st.success("✅ Compliance case created successfully")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.metric("Risk Score", f"{risk_score}/100")
+
+with col2:
+    st.metric("Risk Level", status)
+
+if risk_score >= 70:
+    st.warning("High-risk transaction detected. Review is recommended.")
+else:
+    st.info("Transaction is currently assessed as low risk.")
 
 # =========================
 # CASES
@@ -262,24 +332,48 @@ with tab3:
         # =========================
         col1, col2 = st.columns(2)
 
-        status_filter = col1.selectbox(
-            "Filter Risk Level",
-            ["ALL", "HIGH", "LOW"]
-        )
+       status_filter = col1.selectbox(
+    "Risk Level",
+    ["ALL", "HIGH", "LOW"]
+)
 
-        case_filter = col2.selectbox(
-            "Filter Case Status",
-            ["ALL", "OPEN", "REVIEWING", "CLOSED"]
-        )
+case_filter = col2.selectbox(
+    "Case Status",
+    ["ALL", "OPEN", "REVIEWING", "CLOSED"]
+)
+
+min_risk = st.slider(
+    "Minimum Risk Score",
+    min_value=0,
+    max_value=100,
+    value=0
+)
 
         # Apply filters safely
         if status_filter != "ALL":
             df = df[df["Status"] == status_filter]
 
-        if case_filter != "ALL":
-            df = df[df["Case Status"] == case_filter]
+       df = df[df["Risk Score"] >= min_risk]
 
-        st.dataframe(df, use_container_width=True)
+        search = st.text_input(
+    "Search Property ID",
+    placeholder="Enter Property ID..."
+)
+
+if search:
+    df = df[
+        df["Property"].astype(str).str.contains(
+            search,
+            case=False,
+            na=False
+        )
+    ]
+
+st.dataframe(
+    df,
+    use_container_width=True,
+    hide_index=True
+)
 
     else:
         st.info("No cases yet. Run a risk check first.")
@@ -311,6 +405,5 @@ with tab4:
 st.divider()
 
 st.caption(
-    "© 2026 AUSTRAC Compliance SaaS Platform | Version 1.0 | "
-    "Demo Platform | Built with Streamlit"
+    "© 2026 AUSTRAC Compliance SaaS Platform | Commercial Edition v2.0"
 )
