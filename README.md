@@ -95,38 +95,31 @@ pip install -r requirements.txt
 streamlit run app.py
 
 ---
-
-## 🔐 Demo Login
-
+🔐 Demo Login
 Username: admin
 Password: admin
-
----
-
-## 📊 Modules
-Dashboard
+📊 Modules Overview
+📌 Dashboard
 KPI overview
-Risk charts
+Risk analytics charts
 Case summaries
-Risk Engine
-Input property ID + transaction amount
-Generates risk score
-Creates compliance case automatically
-Case Management
+⚠️ Risk Engine
+Input Property ID + transaction amount
+Generates risk score (0–100)
+Automatically creates compliance case
+📁 Case Management
 View all cases
-Filter by risk and status
-Search by property ID
-Audit Log
+Filter by risk level and status
+Search by Property ID
+🧾 Audit Log
 System activity tracking
-Login and action history
-Compliance Report Generator
+Login history
+Risk check history
+📄 Compliance Report Generator
 Generates draft SMR reports
 Structured compliance justification
 Internal review support
-
----
-
-## ⚠️ Disclaimer
+⚠️ Disclaimer
 
 This system is a simulation tool only.
 
@@ -138,20 +131,14 @@ Guarantee compliance outcomes
 
 Users are responsible for regulatory compliance.
 
----
-
-## 🚀 Intended Use
+🚀 Intended Use
 Real estate compliance training
 AML/CTF workflow simulation
 SaaS prototype demonstration
 Internal risk analysis support
-
----
-
-## 📌 Roadmap
-Multi-user role system (Admin / Analyst)
+📌 Roadmap
+Multi-user roles (Admin / Analyst)
 PDF export for SMR reports
-PostgreSQL cloud upgrade
+PostgreSQL database upgrade
 AI-powered risk explanations
 Production SaaS deployment
-
