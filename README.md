@@ -130,22 +130,27 @@ Password: admin
 
 ### 📊 Modules
 
-Dashboard
+📌 Dashboard
 KPI overview
 Risk charts
 Case summaries
-Risk Engine
+
+⚠️ Risk Engine
 Input property ID + transaction amount
 Generates risk score
 Creates compliance case automatically
-Case Management
+
+📁 Case Management
 View all cases
 Filter by risk and status
 Search by property ID
-Audit Log
+
+🧾 Audit Log
 System activity tracking
-Login and action history
-Compliance Report Generator
+Login history
+Action history
+
+📄 Compliance Report Generator
 Generates draft SMR reports
 Structured compliance justification
 Internal review support
