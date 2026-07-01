@@ -252,7 +252,7 @@ st.bar_chart(chart_df)
 
 st.markdown("### Recent Compliance Cases")
 
-       st.dataframe(
+st.dataframe(
     df.sort_values(by="Risk Score", ascending=False),
     use_container_width=True,
     hide_index=True
