@@ -1,81 +1,109 @@
 import sqlite3
 from datetime import datetime
-import os
 
-DB_PATH = os.path.join("database", "app.db")
+DB_NAME = "app.db"
 
-def get_conn():
-    os.makedirs("database", exist_ok=True)
-    return sqlite3.connect(DB_PATH, check_same_thread=False)
-
+# =========================
+# INIT DATABASE
+# =========================
 def init_db():
-    conn = get_conn()
+    conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
 
+    # CASES TABLE
     c.execute("""
-CREATE TABLE IF NOT EXISTS cases (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    property_id TEXT,
-    amount REAL,
-    risk_score INTEGER,
-    status TEXT,
-    created_at TEXT,
-    created_by TEXT,
-    case_status TEXT
-)
-""")
+        CREATE TABLE IF NOT EXISTS cases (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            property TEXT,
+            amount REAL,
+            risk_score INTEGER,
+            status TEXT,
+            created TEXT,
+            user TEXT,
+            case_status TEXT
+        )
+    """)
 
+    # AUDIT LOG TABLE (FIXED)
     c.execute("""
-    CREATE TABLE IF NOT EXISTS cases (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        property_id TEXT,
-        amount REAL,
-        risk_score INTEGER,
-        status TEXT,
-        created_at TEXT,
-        created_by TEXT
-    )
+        CREATE TABLE IF NOT EXISTS audit_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user TEXT,
+            action TEXT,
+            timestamp TEXT
+        )
     """)
 
     conn.commit()
     conn.close()
 
+
+# =========================
+# LOG ACTION (FIXED)
+# =========================
 def log_action(user, action):
-    conn = get_conn()
-    c = conn.cursor()
-
-    c.execute(
-        "INSERT INTO audit_log (user, action, timestamp) VALUES (?, ?, ?)",
-        (user, action, datetime.now().isoformat())
-    )
-
-    conn.commit()
-    conn.close()
-
-def add_case(property_id, amount, risk_score, status, created_by, case_status="OPEN"):
-    conn = get_conn()
+    conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
 
     c.execute("""
-    INSERT INTO cases (property_id, amount, risk_score, status, created_at, created_by, case_status)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-""", (property_id, amount, risk_score, status, datetime.now().isoformat(), created_by, case_status))
+        INSERT INTO audit_log (user, action, timestamp)
+        VALUES (?, ?, ?)
+    """, (user, action, datetime.now().isoformat()))
 
     conn.commit()
     conn.close()
 
-def get_cases():
-    conn = get_conn()
+
+# =========================
+# ADD CASE
+# =========================
+def add_case(property_id, amount, risk_score, status, user):
+    conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("SELECT * FROM cases ORDER BY id DESC")
+
+    c.execute("""
+        INSERT INTO cases (
+            property, amount, risk_score,
+            status, created, user, case_status
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (
+        property_id,
+        amount,
+        risk_score,
+        status,
+        datetime.now().isoformat(),
+        user,
+        "OPEN"
+    ))
+
+    conn.commit()
+    conn.close()
+
+
+# =========================
+# GET CASES
+# =========================
+def get_cases():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+
+    c.execute("SELECT * FROM cases")
     rows = c.fetchall()
+
     conn.close()
     return rows
 
+
+# =========================
+# GET LOGS
+# =========================
 def get_logs():
-    conn = get_conn()
+    conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("SELECT * FROM audit_log ORDER BY id DESC")
+
+    c.execute("SELECT * FROM audit_log")
     rows = c.fetchall()
+
     conn.close()
     return rows
