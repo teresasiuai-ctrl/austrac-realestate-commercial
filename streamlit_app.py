@@ -129,7 +129,7 @@ if not st.session_state.auth:
 with st.sidebar:
 
     if logo:
-    st.image(logo, width=120)
+        st.image(logo, width=120)
 
     st.markdown("## AUSTRAC SaaS")
 
@@ -144,10 +144,10 @@ with st.sidebar:
 
     st.divider()
 
-    if st.button("Logout", use_container_width=True):
-        st.session_state.auth = False
-        st.session_state.user = ""
-        st.rerun()
+  if st.button("Logout", use_container_width=True):
+    st.session_state.auth = False
+    st.session_state.get("user", "Unknown")
+    st.rerun()
 
 # =========================
 # TABS
