@@ -343,9 +343,9 @@ with tab3:
             ]
         )
 
-        # =========================
-        # FILTERS
-        # =========================
+# =========================
+# FILTERS
+# =========================
         col1, col2 = st.columns(2)
 
         status_filter = col1.selectbox(
@@ -392,6 +392,13 @@ with tab3:
             df,
             use_container_width=True,
             hide_index=True
+        )
+
+        st.divider()
+
+        selected_case = st.selectbox(
+            "Select Case",
+            df["ID"].tolist()
         )
 
     else:
