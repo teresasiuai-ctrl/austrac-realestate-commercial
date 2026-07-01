@@ -59,3 +59,90 @@ It demonstrates how AML/CTF compliance workflows can be digitised using a modern
 ---
 
 ## 🏗️ System Architecture
+
+
+Streamlit Frontend (UI Dashboard)
+↓
+Python Application Layer (app.py)
+↓
+Business Logic Layer (Risk Engine + Case System)
+↓
+SQLite Database (Cases + Audit Logs)
+
+
+---
+
+## 📁 Project Structure
+
+
+app.py
+utils/
+├── db.py
+├── auth.py
+
+assets/
+├── logo.png
+
+requirements.txt
+README.md
+
+
+---
+
+## ⚙️ Installation
+
+```bash
+git clone https://github.com/your-username/austrac-realestate-ai-agent.git
+cd austrac-realestate-ai-agent
+
+python3 -m venv venv
+source venv/bin/activate
+
+pip install -r requirements.txt
+streamlit run app.py
+🔐 Demo Login
+Username: admin
+Password: admin
+📊 Modules
+Dashboard
+KPI overview
+Risk charts
+Case summaries
+Risk Engine
+Input property ID + transaction amount
+Generates risk score
+Creates compliance case automatically
+Case Management
+View all cases
+Filter by risk and status
+Search by property ID
+Audit Log
+System activity tracking
+Login and action history
+Compliance Report Generator
+Generates draft SMR reports
+Structured compliance justification
+Internal review support
+⚠️ Disclaimer
+
+This system is a simulation tool only.
+
+It does not:
+
+Provide legal or financial advice
+Replace AUSTRAC obligations
+Guarantee compliance outcomes
+
+Users are responsible for regulatory compliance.
+
+🚀 Intended Use
+Real estate compliance training
+AML/CTF workflow simulation
+SaaS prototype demonstration
+Internal risk analysis support
+📌 Roadmap
+Multi-user role system (Admin / Analyst)
+PDF export for SMR reports
+PostgreSQL cloud upgrade
+AI-powered risk explanations
+Production SaaS deployment
