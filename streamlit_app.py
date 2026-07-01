@@ -28,23 +28,14 @@ init_db()
 # etc
 
 # =========================
-# INIT DB
-# =========================
-init_db()
-
-# =========================
-# PAGE CONFIG
-# =========================
-st.set_page_config(
-    page_title="AUSTRAC SaaS Platform",
-    layout="wide"
-)
-
-# =========================
 # LOAD LOGO
 # =========================
-logo = Image.open(os.path.join("assets", "logo.png"))
+logo_path = os.path.join("assets", "logo.png")
 
+logo = None
+if os.path.exists(logo_path):
+    logo = Image.open(logo_path)
+    
 # =========================
 # SESSION STATE
 # =========================
@@ -60,7 +51,8 @@ if "user" not in st.session_state:
 col1, col2 = st.columns([1, 6])
 
 with col1:
-    st.image(logo, width=90)
+    if logo:
+        st.image(logo, width=90)
 
 with col2:
     st.title("AUSTRAC Compliance SaaS Platform")
@@ -130,12 +122,13 @@ if not st.session_state.auth:
                 st.error("Invalid login")
 
     st.stop()
-   
+
 # =========================
 # SIDEBAR
 # =========================
 with st.sidebar:
 
+    if logo:
     st.image(logo, width=120)
 
     st.markdown("## AUSTRAC SaaS")
@@ -184,83 +177,83 @@ with tab1:
     total_amount = sum([c[2] for c in cases]) if cases else 0
 
     # =========================
-    # KPI CARDS
-    # =========================
-    col1, col2, col3, col4 = st.columns(4)
+ # =========================
+# KPI CARDS
+# =========================
+kpi1, kpi2, kpi3, kpi4 = st.columns(4)
 
-    col1.metric(
-        "📁 Total Cases",
-        total_cases
+kpi1.metric(
+    "📁 Total Cases",
+    total_cases
+)
+
+kpi2.metric(
+    "🔴 High Risk Cases",
+    high_risk
+)
+
+kpi3.metric(
+    "🟡 Open Cases",
+    open_cases
+)
+
+kpi4.metric(
+    "💰 Total Exposure",
+    f"${total_amount:,.0f}"
+)
+
+st.divider()
+
+# =========================
+# VISUAL INSIGHTS
+# =========================
+if cases:
+
+    df = pd.DataFrame(
+        cases,
+        columns=[
+            "ID",
+            "Property",
+            "Amount",
+            "Risk Score",
+            "Status",
+            "Created",
+            "User",
+            "Case Status"
+        ]
     )
 
-    col2.metric(
-        "🔴 High Risk Cases",
-        high_risk
-    )
+    st.markdown("### 📈 Risk Analytics")
 
-    col3.metric(
-        "🟡 Open Cases",
-        open_cases
-    )
+    colA, colB = st.columns(2)
 
-    col4.metric(
-        "💰 Total Exposure",
-        f"${total_amount:,.0f}"
-    )
-    st.divider()
+    with colA:
+        st.markdown("#### Risk Score Distribution")
+        st.bar_chart(df[["Risk Score"]])
 
-    # =========================
-    # VISUAL INSIGHTS
-    # =========================
-    if cases:
+    with colB:
+        st.markdown("#### Transaction Volume")
 
-        import pandas as pd
-
-        df = pd.DataFrame(
-            cases,
-            columns=[
-                "ID",
-                "Property",
-                "Amount",
-                "Risk Score",
-                "Status",
-                "Created",
-                "User",
-                "Case Status"
-            ]
+        chart_df = (
+            df.groupby("Status")["Amount"]
+              .sum()
+              .reset_index()
+              .set_index("Status")
         )
 
-        st.markdown("### 📈 Risk Analytics")
+        st.bar_chart(chart_df)
 
-        colA, colB = st.columns(2)
+    st.markdown("### Recent Compliance Cases")
 
-        with colA:
-            st.markdown("#### Risk Score Distribution")
-            st.bar_chart(df[["Risk Score"]])
+    st.dataframe(
+        df.sort_values(by="Risk Score", ascending=False),
+        use_container_width=True,
+        hide_index=True
+    )
 
-        with colB:
-            st.markdown("#### Transaction Volume")
-
-chart_df = (
-    df.groupby("Status")["Amount"]
-      .sum()
-      .reset_index()
-      .set_index("Status")
-)
-
-st.bar_chart(chart_df)
-
-st.markdown("### Recent Compliance Cases")
-
-st.dataframe(
-    df.sort_values(by="Risk Score", ascending=False),
-    use_container_width=True,
-    hide_index=True
-)
-
-    else:
-        st.info("No data available. Run a risk check to populate dashboard.")
-
+else:
+    st.info("No data available. Run a risk check to populate dashboard.")
+    
 # =========================
 # RISK ENGINE
 # =========================
@@ -270,6 +263,9 @@ with tab2:
 
     property_id = st.text_input("Property ID")
     amount = st.number_input("Transaction Amount", min_value=0)
+
+    risk_score = None
+    status = None
 
     if st.button("Run Risk Check"):
 
@@ -286,20 +282,22 @@ with tab2:
 
         log_action(st.session_state.user, f"RISK_CHECK {property_id}")
 
-       st.success("✅ Compliance case created successfully")
+        st.success("✅ Compliance case created successfully")
 
-col1, col2 = st.columns(2)
+    if risk_score is not None:
 
-with col1:
-    st.metric("Risk Score", f"{risk_score}/100")
+        col1, col2 = st.columns(2)
 
-with col2:
-    st.metric("Risk Level", status)
+        with col1:
+            st.metric("Risk Score", f"{risk_score}/100")
 
-if risk_score >= 70:
-    st.warning("High-risk transaction detected. Review is recommended.")
-else:
-    st.info("Transaction is currently assessed as low risk.")
+        with col2:
+            st.metric("Risk Level", status)
+
+        if risk_score >= 70:
+            st.warning("High-risk transaction detected. Review is recommended.")
+        else:
+            st.info("Transaction is currently assessed as low risk.")
 
 # =========================
 # CASES
@@ -331,48 +329,51 @@ with tab3:
         # =========================
         col1, col2 = st.columns(2)
 
-       status_filter = col1.selectbox(
-    "Risk Level",
-    ["ALL", "HIGH", "LOW"]
-)
+        status_filter = col1.selectbox(
+            "Risk Level",
+            ["ALL", "HIGH", "LOW"]
+        )
 
-case_filter = col2.selectbox(
-    "Case Status",
-    ["ALL", "OPEN", "REVIEWING", "CLOSED"]
-)
+        case_filter = col2.selectbox(
+            "Case Status",
+            ["ALL", "OPEN", "REVIEWING", "CLOSED"]
+        )
 
-min_risk = st.slider(
-    "Minimum Risk Score",
-    min_value=0,
-    max_value=100,
-    value=0
-)
+        min_risk = st.slider(
+            "Minimum Risk Score",
+            min_value=0,
+            max_value=100,
+            value=0
+        )
 
         # Apply filters safely
         if status_filter != "ALL":
             df = df[df["Status"] == status_filter]
 
-       df = df[df["Risk Score"] >= min_risk]
+        if case_filter != "ALL":
+            df = df[df["Case Status"] == case_filter]
+
+        df = df[df["Risk Score"] >= min_risk]
 
         search = st.text_input(
-    "Search Property ID",
-    placeholder="Enter Property ID..."
-)
-
-if search:
-    df = df[
-        df["Property"].astype(str).str.contains(
-            search,
-            case=False,
-            na=False
+            "Search Property ID",
+            placeholder="Enter Property ID..."
         )
-    ]
 
-st.dataframe(
-    df,
-    use_container_width=True,
-    hide_index=True
-)
+        if search:
+            df = df[
+                df["Property"].astype(str).str.contains(
+                    search,
+                    case=False,
+                    na=False
+                )
+            ]
+
+        st.dataframe(
+            df,
+            use_container_width=True,
+            hide_index=True
+        )
 
     else:
         st.info("No cases yet. Run a risk check first.")
