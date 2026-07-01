@@ -9,8 +9,6 @@ AI-powered AML/CTF risk detection, case management, audit logging, and complianc
 
 The AUSTRAC Real Estate AI Agent is a **SaaS-style compliance simulation platform** designed to help real estate organisations identify financial risk, manage compliance cases, and generate structured draft reports.
 
-It demonstrates how AML/CTF compliance workflows can be digitised using a modern dashboard interface.
-
 > ⚠️ This system is for simulation, training, and internal compliance support only. It is not a legal or regulatory reporting tool.
 
 ---
@@ -57,9 +55,7 @@ It demonstrates how AML/CTF compliance workflows can be digitised using a modern
 - Automates draft reporting
 
 ---
-
 ## 🏗️ System Architecture
-
 
 Streamlit Frontend (UI Dashboard)
 ↓
@@ -68,12 +64,9 @@ Python Application Layer (app.py)
 Business Logic Layer (Risk Engine + Case System)
 ↓
 SQLite Database (Cases + Audit Logs)
-
-
 ---
 
 ## 📁 Project Structure
-
 
 app.py
 utils/
@@ -100,9 +93,12 @@ source venv/bin/activate
 
 pip install -r requirements.txt
 streamlit run app.py
+
 🔐 Demo Login
+
 Username: admin
 Password: admin
+
 📊 Modules
 Dashboard
 KPI overview
@@ -140,9 +136,11 @@ Real estate compliance training
 AML/CTF workflow simulation
 SaaS prototype demonstration
 Internal risk analysis support
+
 📌 Roadmap
 Multi-user role system (Admin / Analyst)
 PDF export for SMR reports
 PostgreSQL cloud upgrade
 AI-powered risk explanations
 Production SaaS deployment
+
