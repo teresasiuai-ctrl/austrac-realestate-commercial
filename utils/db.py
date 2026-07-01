@@ -34,9 +34,6 @@ def init_db():
         )
     """)
 
-    conn.commit()
-    conn.close()
-
     # REPORTS TABLE
     c.execute("""
         CREATE TABLE IF NOT EXISTS reports (
@@ -48,6 +45,8 @@ def init_db():
         )
     """)
     
+    conn.commit()
+    conn.close()
 # =========================
 # LOG ACTION (FIXED)
 # =========================
