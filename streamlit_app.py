@@ -144,10 +144,10 @@ with st.sidebar:
 
     st.divider()
 
-  if st.button("Logout", use_container_width=True):
-    st.session_state.auth = False
-    st.session_state.get("user", "Unknown")
-    st.rerun()
+    if st.button("Logout", use_container_width=True):
+        st.session_state.auth = False
+        st.session_state.user = ""
+        st.rerun()
 
 # =========================
 # TABS
@@ -176,8 +176,8 @@ with tab1:
     open_cases = len([c for c in cases if c[7] == "OPEN"])
     total_amount = sum([c[2] for c in cases]) if cases else 0
 
-    # =========================
- # =========================
+# =========================
+# =========================
 # KPI CARDS
 # =========================
 kpi1, kpi2, kpi3, kpi4 = st.columns(4)
