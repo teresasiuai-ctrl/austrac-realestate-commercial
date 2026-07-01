@@ -170,11 +170,11 @@ with tab1:
 
     st.title("Executive Compliance Dashboard")
 
-st.caption(
-    "Real-time AML / CTF monitoring for property transactions"
-)
+    st.caption(
+        "Real-time AML / CTF monitoring for property transactions"
+    )
 
-st.divider()
+    st.divider()
 
     cases = get_cases()
 
@@ -188,26 +188,25 @@ st.divider()
     # =========================
     col1, col2, col3, col4 = st.columns(4)
 
-   col1.metric(
-    "📁 Total Cases",
-    total_cases
-)
+    col1.metric(
+        "📁 Total Cases",
+        total_cases
+    )
 
-col2.metric(
-    "🔴 High Risk Cases",
-    high_risk
-)
+    col2.metric(
+        "🔴 High Risk Cases",
+        high_risk
+    )
 
-col3.metric(
-    "🟡 Open Cases",
-    open_cases
-)
+    col3.metric(
+        "🟡 Open Cases",
+        open_cases
+    )
 
-col4.metric(
-    "💰 Total Exposure",
-    f"${total_amount:,.0f}"
-)
-
+    col4.metric(
+        "💰 Total Exposure",
+        f"${total_amount:,.0f}"
+    )
     st.divider()
 
     # =========================
