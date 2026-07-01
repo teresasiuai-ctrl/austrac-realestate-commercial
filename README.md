@@ -1,41 +1,66 @@
-# AUSTRAC Real Estate AI Agent (Commercial Edition)
+# 📘 AUSTRAC Real Estate AI Agent (Commercial SaaS Edition)
 
-## 🏢 Product Overview
+## 🏢 Overview
 
-The AUSTRAC Real Estate AI Agent (Commercial Edition) is a professional-grade AI compliance and automation platform designed for real estate businesses, agencies, and property technology workflows.
+The AUSTRAC Real Estate AI Agent is a **compliance-focused SaaS simulation platform** built for real estate and property workflows.
 
-It helps organisations streamline compliance, reduce manual workload, and support AUSTRAC-related regulatory obligations using AI-driven automation.
+It demonstrates how organisations can apply **AML/CTF risk detection, case management, audit logging, and compliance reporting workflows** using an AI-assisted system.
 
-## 🎯 Key Capabilities
+This platform is designed for **internal compliance support, training, and decision assistance (not legal advice or regulatory submission)**.
 
-- AUSTRAC compliance support and risk flagging
-- Automated property and client data processing
-- Smart document extraction and summarisation
-- Transaction pattern analysis (risk detection support)
-- AI assistant for real estate operations
-- Scalable architecture for commercial deployment
+---
+
+## 🚀 Key Features
+
+* Secure login system (demo authentication)
+* Real-time AML/CTF risk scoring engine
+* Automated compliance case creation
+* High-risk transaction detection
+* Case management dashboard (filter, search, track)
+* Full audit logging system
+* Risk analytics dashboard with visual insights
+* Draft Suspicious Matter Report (SMR) generator
+* Compliance workflow simulation
+
+---
 
 ## 🧠 Core Value
 
-- Reduce compliance workload for agencies
-- Improve accuracy in data handling
-- Assist with regulatory reporting preparation
-- Support operational decision-making using AI insights
+* Reduces manual compliance workload
+* Standardises risk assessment processes
+* Improves audit visibility and traceability
+* Supports internal compliance decision-making
+* Generates structured draft compliance reports
+
+---
 
 ## 🏗️ System Architecture
 
-Frontend → Flask/Python Backend (app.py) → AI Prompts (prompts/) → Compliance Logic Engine
+Streamlit Frontend (UI Dashboard)
+→ Python Application Layer (app.py)
+→ Business Logic (Risk Engine + Case Management)
+→ SQLite Database (Cases + Audit Logs)
+
+---
 
 ## 📁 Project Structure
 
-- app.py
-- prompts/
-- static/
-- templates/
-- requirements.txt
-- README.md
+```
+app.py
+utils/
+  ├── db.py
+  ├── auth.py
 
-## ⚙️ Installation
+assets/
+  ├── logo.png
+
+requirements.txt
+README.md
+```
+
+---
+
+## ⚙️ Installation & Run
 
 ```bash
 git clone https://github.com/your-username/austrac-realestate-ai-agent.git
@@ -45,19 +70,87 @@ python3 -m venv venv
 source venv/bin/activate
 
 pip install -r requirements.txt
-python app.py
+streamlit run app.py
+```
 
-## 🔐 Compliance Notice
+---
 
-Decision support tool only. Not legal or financial advice. Users must ensure AUSTRAC and AML/CTF compliance.
+## 🔐 Demo Login
 
-## 🚀 Commercial Use
+```
+Username: admin
+Password: admin
+```
 
-For real estate agencies, property firms, and compliance teams.
+---
+
+## 📊 Modules Overview
+
+### 📊 Dashboard
+
+* KPI monitoring (cases, risk, exposure)
+* Risk distribution charts
+* Transaction analytics
+
+### ⚠️ Risk Engine
+
+* Input property ID + transaction amount
+* Generates risk score (0–100)
+* Automatically creates compliance case
+
+### 📁 Case Management
+
+* View all cases
+* Filter by risk level and status
+* Search by property ID
+
+### 🧾 Audit Log
+
+* Tracks system activity
+* Login events
+* Risk checks
+* Case creation history
+
+### 📄 Compliance Report Generator
+
+* Generates draft SMR-style reports per case
+* Standardised compliance reasoning
+* Supports internal review workflows
+
+---
+
+## ⚠️ Compliance Disclaimer
+
+This system is a **decision-support simulation tool only**.
+
+It does not:
+
+* Provide legal or financial advice
+* Replace AUSTRAC reporting obligations
+* Guarantee regulatory compliance outcomes
+
+Users remain responsible for compliance obligations.
+
+---
+
+## 🚀 Intended Use
+
+Designed for:
+
+* Real estate agencies
+* Property compliance teams
+* AML/CTF workflow simulation
+* Internal training and prototyping
+
+---
 
 ## 📌 Roadmap
-Dashboard UI
-API integrations
-Risk scoring engine
-Audit logs
-Multi-agent AI system
+
+* Role-based access control (multi-user system)
+* PDF export for compliance reports
+* PostgreSQL database upgrade
+* Production SaaS deployment
+* AI-powered risk explanation engine
+
+---
+
