@@ -4,8 +4,16 @@ from PIL import Image
 import pandas as pd
 
 from utils.auth import authenticate
-from utils.db import init_db, log_action, add_case, get_cases, get_logs
 
+from utils.db import (
+    init_db,
+    log_action,
+    add_case,
+    get_cases,
+    get_logs,
+    save_report,
+    get_reports,
+)
 # =========================
 # PAGE CONFIG
 # =========================
@@ -250,6 +258,17 @@ if cases:
         use_container_width=True,
         hide_index=True
     )
+
+    st.divider()
+
+    case_id = st.number_input(
+        "Case ID",
+        min_value=1,
+        step=1
+    )
+
+    if st.button("Generate Compliance Report"):
+        st.info("Report generator coming in the next step.")
 
 else:
     st.info("No data available. Run a risk check to populate dashboard.")
