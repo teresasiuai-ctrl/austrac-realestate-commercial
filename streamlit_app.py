@@ -398,8 +398,45 @@ with tab3:
             df["ID"].tolist()
         )
         
-        if st.button("Generate Compliance Report"):
-            st.success(f"Generating report for Case #{selected_case}")
+if st.button("Generate Compliance Report"):
+
+    selected = df[df["ID"] == selected_case].iloc[0]
+
+    report = f"""
+AUSTRAC COMPLIANCE REPORT
+
+Case ID: {selected['ID']}
+Property: {selected['Property']}
+Transaction Amount: ${selected['Amount']:,.2f}
+Risk Score: {selected['Risk Score']}
+Risk Level: {selected['Status']}
+Case Status: {selected['Case Status']}
+
+Compliance Assessment
+
+This transaction has been automatically assessed by the AUSTRAC Risk Engine.
+
+The calculated risk score indicates that this transaction should be reviewed in accordance with the organisation's AML/CTF compliance procedures.
+
+Recommendation:
+Conduct Enhanced Customer Due Diligence where appropriate and consider whether an SMR is required.
+
+Generated automatically by the AUSTRAC Compliance SaaS Platform.
+"""
+
+    save_report(
+        selected["ID"],
+        selected["Property"],
+        report
+    )
+
+    st.success("Compliance report generated.")
+
+    st.text_area(
+        "Compliance Report",
+        report,
+        height=350
+    )
     
     else:
         st.info("No cases yet. Run a risk check first.")
