@@ -1,6 +1,13 @@
 import streamlit as st
 import pandas as pd
-from utils.db import get_cases
+import io
+
+from utils.db import get_cases, save_report, get_reports_by_case
+from models.compliance_report import generate_smr_report
+
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+
 
 def show_case_management():
 
@@ -13,7 +20,7 @@ def show_case_management():
         return
 
     # -----------------------------
-    # FIXED: now expecting 8 columns
+    # SCHEMA VALIDATION (8 columns)
     # -----------------------------
     if any(len(c) != 8 for c in cases):
         st.error("Database schema mismatch detected (expected 8 columns).")
@@ -32,7 +39,7 @@ def show_case_management():
     ])
 
     # -----------------------------
-    # Filters
+    # FILTERS
     # -----------------------------
     st.sidebar.header("Filters")
 
@@ -55,7 +62,7 @@ def show_case_management():
         filtered_df = filtered_df[filtered_df["Risk Level"] == risk_filter]
 
     # -----------------------------
-    # KPIs
+    # KPI DASHBOARD
     # -----------------------------
     col1, col2, col3 = st.columns(3)
 
@@ -66,6 +73,92 @@ def show_case_management():
     st.markdown("---")
 
     # -----------------------------
-    # Display
+    # CASE SELECTION (NEW)
     # -----------------------------
+    st.subheader("Select Case")
+
+    case_options = {
+        f"{row[0]} | {row[1]} | ${row[2]} | {row[4]}": row
+        for row in cases
+    }
+
+    selected_label = st.selectbox(
+        "Choose a case to review",
+        list(case_options.keys())
+    )
+
+    selected_case = case_options[selected_label]
+    case_id = selected_case[0]
+
+    st.markdown("---")
+
+    # -----------------------------
+    # CASE DETAILS
+    # -----------------------------
+    st.subheader("Case Details")
+
+    st.write(f"Property: {selected_case[1]}")
+    st.write(f"Amount: ${selected_case[2]}")
+    st.write(f"Risk Score: {selected_case[3]}")
+    st.write(f"Risk Level: {selected_case[4]}")
+    st.write(f"Status: {selected_case[7]}")
+
+    # -----------------------------
+    # GENERATE REPORT
+    # -----------------------------
+    if st.button("Generate Compliance Report"):
+
+        report = generate_smr_report(selected_case)
+
+        save_report(case_id, report)
+
+        st.success("Compliance report generated and saved.")
+
+    # -----------------------------
+    # LOAD REPORTS
+    # -----------------------------
+    reports = get_reports_by_case(case_id)
+
+    if reports:
+
+        latest_report = reports[0][1]
+
+        st.subheader("Latest Compliance Report")
+
+        with st.expander("View Report"):
+            st.text(latest_report)
+
+        # -----------------------------
+        # DOWNLOAD PDF
+        # -----------------------------
+        if st.button("Download PDF"):
+
+            buffer = io.BytesIO()
+            doc = SimpleDocTemplate(buffer)
+
+            styles = getSampleStyleSheet()
+            content = []
+
+            for line in latest_report.split("\n"):
+                content.append(Paragraph(line, styles["Normal"]))
+                content.append(Spacer(1, 6))
+
+            doc.build(content)
+
+            st.download_button(
+                "Download Report PDF",
+                buffer.getvalue(),
+                file_name=f"case_{case_id}_compliance_report.pdf",
+                mime="application/pdf"
+            )
+
+    else:
+        st.info("No compliance report generated yet for this case.")
+
+    # -----------------------------
+    # FULL TABLE VIEW (existing feature)
+    # -----------------------------
+    st.markdown("---")
+    st.subheader("All Cases")
+
     st.dataframe(filtered_df, use_container_width=True)
