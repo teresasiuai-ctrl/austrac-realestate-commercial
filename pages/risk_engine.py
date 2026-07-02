@@ -87,23 +87,30 @@ def show_risk_engine():
         for reason in reasons:
             st.write(f"• {reason}")
 
-try:
-    add_case(
-        property_id,
-        amount,
-        buyer_name,
-        buyer_type,
-        source_of_funds,
-        cash_payment,
-        overseas_funds,
-        pep,
-        sanctions,
-        score,
-        level,
-        "admin"
-    )
+        try:
 
-    st.success("Case created successfully.")
+            add_case(
+                property_id,
+                amount,
+                buyer_name,
+                buyer_type,
+                source_of_funds,
+                cash_payment,
+                overseas_funds,
+                pep,
+                sanctions,
+                score,
+                level,
+                "admin"
+            )
 
-except Exception as e:
-    st.error(f"Database Error: {e}")
+            log_action(
+                "admin",
+                f"Risk assessment created for {property_id}"
+            )
+
+            st.success("Case created successfully.")
+
+        except Exception as e:
+
+            st.error(f"Database Error: {e}")
