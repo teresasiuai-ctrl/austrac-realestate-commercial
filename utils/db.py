@@ -4,56 +4,25 @@ DB_NAME = "app.db"
 
 
 # -----------------------------
-# GET CASES (SAFE + STABLE)
+# GET CASES
 # -----------------------------
 def get_cases():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
 
-    # We use SELECT * because your DB schema is currently messy/wide (15 columns)
     c.execute("SELECT * FROM cases")
-
     rows = c.fetchall()
-    conn.close()
 
+    conn.close()
     return rows
 
 
 # -----------------------------
-# OPTIONAL: DEBUG HELP
+# ADD CASE (SAFE INSERT)
 # -----------------------------
-def debug_cases_schema():
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-
-    c.execute("PRAGMA table_info(cases)")
-    columns = c.fetchall()
-
-    conn.close()
-    return columns
-
-
-# -----------------------------
-# OPTIONAL: GET SINGLE CASE
-# -----------------------------
-def get_case_by_id(case_id):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-
-    c.execute("SELECT * FROM cases WHERE id = ?", (case_id,))
-    row = c.fetchone()
-
-    conn.close()
-    return row
-
-
-# -----------------------------
-# OPTIONAL: INSERT CASE (SAFE FOR CURRENT SCHEMA)
-# -----------------------------
-def insert_case(data):
+def add_case(case_data):
     """
-    WARNING: This assumes your current 15-column structure.
-    If you don’t use this function yet, ignore it.
+    Expects full 15-column format (your current DB structure)
     """
 
     conn = sqlite3.connect(DB_NAME)
@@ -63,7 +32,18 @@ def insert_case(data):
         INSERT INTO cases VALUES (
             NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         )
-    """, data)
+    """, case_data)
 
     conn.commit()
     conn.close()
+
+
+# -----------------------------
+# LOG ACTION (SIMPLE VERSION)
+# -----------------------------
+def log_action(action, user="system"):
+    """
+    Lightweight logger (no separate table required yet)
+    """
+
+    print(f"[AUDIT LOG] {user}: {action}")
