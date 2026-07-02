@@ -106,4 +106,4 @@ try:
     st.success("Case created successfully.")
 
 except Exception as e:
-    st.error(str(e))       
+    st.error(f"Database Error: {e}")
