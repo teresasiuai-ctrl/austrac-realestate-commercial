@@ -4,7 +4,6 @@ from PIL import Image
 import pandas as pd
 
 from utils.auth import authenticate
-
 from utils.db import (
     init_db,
     log_action,
@@ -14,6 +13,7 @@ from utils.db import (
     save_report,
     get_reports,
 )
+
 # =========================
 # PAGE CONFIG
 # =========================
@@ -21,7 +21,26 @@ st.set_page_config(
     page_title="AUSTRAC SaaS Platform",
     layout="wide"
 )
+from pages.dashboard import show_dashboard
+from pages.risk_engine import show_risk_engine
+from pages.case_management import show_case_management
 
+st.sidebar.title("Navigation")
+
+page = st.sidebar.radio(
+    "Go to",
+    ["Dashboard", "Risk Engine", "Case Management"]
+)
+
+if page == "Dashboard":
+    show_dashboard()
+
+elif page == "Risk Engine":
+    show_risk_engine()
+
+elif page == "Case Management":
+    show_case_management()
+    
 # =========================
 # INIT DATABASE
 # =========================
