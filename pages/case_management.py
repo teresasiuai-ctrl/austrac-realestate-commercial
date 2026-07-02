@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-
 from utils.db import get_cases
 
 
@@ -14,10 +13,21 @@ def show_case_management():
         st.info("No cases found.")
         return
 
-    # =============================
-    # SAFE DATAFRAME (LOCKED SCHEMA)
-    # =============================
-    df = pd.DataFrame(cases, columns=[
+    # =========================
+    # SAFE DATAFRAME (NO CRASH MODE)
+    # =========================
+    df = pd.DataFrame(cases)
+
+    # Ensure minimum structure exists
+    if df.shape[1] < 13:
+        st.error("Database schema mismatch detected. Please reset or migrate DB.")
+        st.write(df)
+        return
+
+    # Normalize to expected schema
+    df = df.iloc[:, :13]
+
+    df.columns = [
         "ID",
         "Property",
         "Amount",
@@ -31,40 +41,37 @@ def show_case_management():
         "Risk Score",
         "Risk Level",
         "Status"
-    ])
+    ]
 
-    # =============================
-    # CASE LIST VIEW
-    # =============================
+    # =========================
+    # CASE TABLE
+    # =========================
     st.subheader("All Cases")
-
     st.dataframe(df, use_container_width=True)
 
     st.markdown("---")
 
-    # =============================
-    # CASE SELECTION
-    # =============================
-    case_ids = df["ID"].tolist()
+    # =========================
+    # CASE SELECTOR
+    # =========================
+    selected_id = st.selectbox("Select Case ID", df["ID"].tolist())
 
-    selected_id = st.selectbox("Select Case ID", case_ids)
+    case = df[df["ID"] == selected_id].iloc[0]
 
-    selected_case = df[df["ID"] == selected_id].iloc[0]
-
-    # =============================
+    # =========================
     # CASE DETAILS
-    # =============================
+    # =========================
     st.subheader("Case Details")
 
-    st.write(f"**Property:** {selected_case['Property']}")
-    st.write(f"**Amount:** ${selected_case['Amount']}")
-    st.write(f"**Buyer Name:** {selected_case['Buyer Name']}")
-    st.write(f"**Buyer Type:** {selected_case['Buyer Type']}")
-    st.write(f"**Source of Funds:** {selected_case['Source of Funds']}")
-    st.write(f"**Cash Payment:** {selected_case['Cash Payment']}")
-    st.write(f"**Overseas Funds:** {selected_case['Overseas Funds']}")
-    st.write(f"**PEP:** {selected_case['PEP']}")
-    st.write(f"**Sanctions:** {selected_case['Sanctions']}")
-    st.write(f"**Risk Score:** {selected_case['Risk Score']}")
-    st.write(f"**Risk Level:** {selected_case['Risk Level']}")
-    st.write(f"**Status:** {selected_case['Status']}")
+    st.write(f"**Property:** {case['Property']}")
+    st.write(f"**Amount:** ${case['Amount']}")
+    st.write(f"**Buyer Name:** {case['Buyer Name']}")
+    st.write(f"**Buyer Type:** {case['Buyer Type']}")
+    st.write(f"**Source of Funds:** {case['Source of Funds']}")
+    st.write(f"**Cash Payment:** {case['Cash Payment']}")
+    st.write(f"**Overseas Funds:** {case['Overseas Funds']}")
+    st.write(f"**PEP:** {case['PEP']}")
+    st.write(f"**Sanctions:** {case['Sanctions']}")
+    st.write(f"**Risk Score:** {case['Risk Score']}")
+    st.write(f"**Risk Level:** {case['Risk Level']}")
+    st.write(f"**Status:** {case['Status']}")
