@@ -13,30 +13,31 @@ def show_dashboard():
         st.info("No data available yet.")
         return
 
-    # SAFE: auto-handle row length (prevents blank screen crashes)
-    df = pd.DataFrame(cases)
+    # =========================
+    # STRICT SCHEMA (MATCH CASE MANAGEMENT + RISK ENGINE)
+    # =========================
+    df = pd.DataFrame(cases, columns=[
+        "ID",
+        "Property",
+        "Amount",
+        "Buyer Name",
+        "Buyer Type",
+        "Source of Funds",
+        "Cash Payment",
+        "Overseas Funds",
+        "PEP",
+        "Sanctions",
+        "Risk Score",
+        "Risk Level",
+        "Status"
+    ])
 
-    # Rename only if expected structure exists
-    if df.shape[1] >= 13:
-        df = df.iloc[:, :13]
-        df.columns = [
-            "ID",
-            "Property",
-            "Amount",
-            "Buyer Name",
-            "Buyer Type",
-            "Source of Funds",
-            "Cash Payment",
-            "Overseas Funds",
-            "PEP",
-            "Sanctions",
-            "Risk Score",
-            "Risk Level",
-            "Status"
-        ]
-    else:
-        st.warning("Database schema mismatch detected")
-        st.dataframe(df)
+    # =========================
+    # SAFETY CHECK (ONLY VALIDATES, DOES NOT HIDE ERRORS)
+    # =========================
+    if df.shape[1] != 13:
+        st.error("Database schema mismatch detected. Expected 13 columns.")
+        st.write(df)
         return
 
     # =========================
@@ -67,5 +68,8 @@ def show_dashboard():
 
     st.markdown("---")
 
+    # =========================
+    # TABLE VIEW
+    # =========================
     st.subheader("All Cases")
     st.dataframe(df, use_container_width=True)
