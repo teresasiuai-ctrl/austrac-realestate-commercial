@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
-
 from utils.db import get_cases
-
 
 def show_dashboard():
 
@@ -11,44 +9,45 @@ def show_dashboard():
     cases = get_cases()
 
     if not cases:
-        st.info("No cases yet.")
+        st.info("No cases available.")
         return
 
-    df = pd.DataFrame(
-        cases,
-        columns=[
-            "ID",
-            "Property",
-            "Amount",
-            "Buyer",
-            "Buyer Type",
-            "Source of Funds",
-            "Cash",
-            "Overseas",
-            "PEP",
-            "Sanctions",
-            "Risk Score",
-            "Status",
-            "Created",
-            "User",
-            "Case Status"
-        ]
-    )
+    # -----------------------------
+    # SAFETY CHECK (8-column schema)
+    # -----------------------------
+    if any(len(c) != 8 for c in cases):
+        st.error("Database schema mismatch detected (expected 8 columns).")
+        st.write(cases)
+        return
 
-    # KPI
+    # -----------------------------
+    # DataFrame
+    # -----------------------------
+    df = pd.DataFrame(cases, columns=[
+        "ID",
+        "Property",
+        "Amount",
+        "Risk Score",
+        "Risk Level",
+        "Created",
+        "User",
+        "Status"
+    ])
+
+    # -----------------------------
+    # KPIs
+    # -----------------------------
     col1, col2, col3, col4 = st.columns(4)
 
     col1.metric("Total Cases", len(df))
-    col2.metric("High Risk", len(df[df["Risk Score"] >= 70]))
-    col3.metric("Open Cases", len(df[df["Case Status"] == "OPEN"]))
-    col4.metric("Total Amount", f"${df['Amount'].sum():,.2f}")
+    col2.metric("High Risk", len(df[df["Risk Level"] == "HIGH"]))
+    col3.metric("Medium Risk", len(df[df["Risk Level"] == "MEDIUM"]))
+    col4.metric("Open Cases", len(df[df["Status"] == "OPEN"]))
 
-    st.divider()
+    st.markdown("---")
 
-    st.subheader("Recent Compliance Cases")
-
-    st.dataframe(
-        df,
-        use_container_width=True,
-        hide_index=True
-    )
+    # -----------------------------
+    # Recent Cases
+    # -----------------------------
+    st.subheader("Recent Cases")
+    st.dataframe(df.sort_values("Created", ascending=False), use_container_width=True)
