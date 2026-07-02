@@ -1,27 +1,28 @@
 import streamlit as st
 
-from pages.dashboard import show_dashboard
-from pages.risk_engine import show_risk_engine
-from pages.case_management import show_case_management
-from utils.db import init_reports_table
-
 # =========================
-# PAGE CONFIG
+# PAGE CONFIG (MUST BE FIRST STREAMLIT CALL)
 # =========================
 st.set_page_config(
     page_title="AUSTRAC Compliance SaaS Platform",
     layout="wide"
 )
 
+from pages.dashboard import show_dashboard
+from pages.risk_engine import show_risk_engine
+from pages.case_management import show_case_management
+from utils.db import init_reports_table
+
+
 # =========================
 # INITIALISE DATABASE TABLES
 # =========================
 init_reports_table()
 
+
 # =========================
 # HEADER WITH LOGO
 # =========================
-
 col1, col2 = st.columns([1, 6])
 
 with col1:
@@ -32,6 +33,7 @@ with col2:
     st.caption("Compliance Risk & Reporting System")
 
 st.markdown("---")
+
 
 # =========================
 # SIDEBAR NAVIGATION
@@ -46,6 +48,7 @@ page = st.sidebar.radio(
         "Case Management"
     ]
 )
+
 
 # =========================
 # ROUTER
