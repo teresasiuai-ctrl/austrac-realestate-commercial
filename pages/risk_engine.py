@@ -14,11 +14,23 @@ def show_risk_engine():
 
     amount = st.number_input("Transaction Amount", min_value=0.0, step=1000.0)
 
-    buyer_type = st.selectbox("Buyer Type", ["Individual", "Company", "Trust"])
+    buyer_type = st.selectbox(
+        "Buyer Type",
+        ["Individual", "Company", "Trust"]
+    )
 
     source_of_funds = st.selectbox(
         "Source of Funds",
-        ["Employment Income", "Savings", "Business Income", "Inheritance", "Gift", "Loan", "Overseas Funds", "Other"]
+        [
+            "Employment Income",
+            "Savings",
+            "Business Income",
+            "Inheritance",
+            "Gift",
+            "Loan",
+            "Overseas Funds",
+            "Other"
+        ]
     )
 
     cash_payment = st.checkbox("Cash Payment")
@@ -49,7 +61,7 @@ def show_risk_engine():
         score, level, reasons = calculate_risk(data)
 
         if issues:
-            st.warning("CDD Issues")
+            st.warning("CDD Issues Found")
             for i in issues:
                 st.write("•", i)
 
@@ -60,6 +72,9 @@ def show_risk_engine():
             st.write("•", r)
 
         try:
+            # =============================
+            # FIXED CASE STRUCTURE (MATCH DB + DASHBOARD)
+            # =============================
             add_case((
                 property_id,
                 amount,
@@ -75,8 +90,9 @@ def show_risk_engine():
                 "OPEN"
             ))
 
-            log_action("system", f"Case created: {property_id}")
-            st.success("Case created")
+            log_action("system", f"Case created for {property_id}")
+
+            st.success("Case created successfully.")
 
         except Exception as e:
-            st.error(f"DB Error: {e}")
+            st.error(f"Database Error: {e}")
