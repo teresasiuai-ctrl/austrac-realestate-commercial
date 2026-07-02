@@ -1,23 +1,26 @@
 import streamlit as st
 
+from pages.dashboard import show_dashboard
+from pages.risk_engine import show_risk_engine
+from pages.case_management import show_case_management
+from utils.db import init_reports_table, init_users_table
+
+
 # =========================
-# PAGE CONFIG (MUST BE FIRST STREAMLIT CALL)
+# PAGE CONFIG
 # =========================
 st.set_page_config(
     page_title="AUSTRAC Compliance SaaS Platform",
     layout="wide"
 )
 
-from pages.dashboard import show_dashboard
-from pages.risk_engine import show_risk_engine
-from pages.case_management import show_case_management
-from utils.db import init_reports_table, init_users_table
 
 # =========================
-# INITIALISE DATABASE TABLES
+# INIT DATABASE (SAFE STARTUP)
 # =========================
 init_reports_table()
 init_users_table()
+
 
 # =========================
 # HEADER WITH LOGO
@@ -33,27 +36,27 @@ with col2:
 
 st.markdown("---")
 
+
 # =========================
 # SIDEBAR NAVIGATION
 # =========================
 st.sidebar.title("Navigation")
 
-st.sidebar.markdown("---")
-
 page = st.sidebar.radio(
-    "",
+    "Go to",
     [
-        "📊 Dashboard",
-        "⚠️ Risk Engine",
-        "📁 Case Management"
+        "Dashboard",
+        "Risk Engine",
+        "Case Management"
     ]
 )
 
 st.sidebar.markdown("---")
 st.sidebar.caption("AUSTRAC Compliance SaaS")
 
+
 # =========================
-# ROUTER
+# ROUTER (SAFE + STABLE)
 # =========================
 if page == "Dashboard":
     show_dashboard()
