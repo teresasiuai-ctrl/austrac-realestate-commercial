@@ -1,18 +1,7 @@
 import streamlit as st
 import pandas as pd
-import io
 
-from utils.db import (
-    get_cases,
-    save_report,
-    get_reports_by_case,
-    update_case_status
-)
-
-from models.compliance_report import generate_smr_report
-
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
+from utils.db import get_cases
 
 
 def show_case_management():
@@ -26,185 +15,56 @@ def show_case_management():
         return
 
     # =============================
-    # SCHEMA VALIDATION (8 columns)
+    # SAFE DATAFRAME (LOCKED SCHEMA)
     # =============================
-    if any(len(c) != 8 for c in cases):
-        st.error("Database schema mismatch detected (expected 8 columns).")
-        st.write(cases)
-        return
-
     df = pd.DataFrame(cases, columns=[
         "ID",
         "Property",
         "Amount",
+        "Buyer Name",
+        "Buyer Type",
+        "Source of Funds",
+        "Cash Payment",
+        "Overseas Funds",
+        "PEP",
+        "Sanctions",
         "Risk Score",
         "Risk Level",
-        "Created",
-        "User",
         "Status"
     ])
 
     # =============================
-    # FILTERS
+    # CASE LIST VIEW
     # =============================
-    st.sidebar.header("Filters")
+    st.subheader("All Cases")
 
-    status_filter = st.sidebar.selectbox(
-        "Status",
-        ["All"] + sorted(df["Status"].dropna().unique().tolist())
-    )
-
-    risk_filter = st.sidebar.selectbox(
-        "Risk Level",
-        ["All"] + sorted(df["Risk Level"].dropna().unique().tolist())
-    )
-
-    filtered_df = df.copy()
-
-    if status_filter != "All":
-        filtered_df = filtered_df[filtered_df["Status"] == status_filter]
-
-    if risk_filter != "All":
-        filtered_df = filtered_df[filtered_df["Risk Level"] == risk_filter]
-
-    # =============================
-    # KPI METRICS
-    # =============================
-    col1, col2, col3 = st.columns(3)
-
-    col1.metric("Total Cases", len(df))
-    col2.metric("High Risk", len(df[df["Risk Level"] == "HIGH"]))
-    col3.metric("Open Cases", len(df[df["Status"] == "OPEN"]))
+    st.dataframe(df, use_container_width=True)
 
     st.markdown("---")
 
     # =============================
-    # CASE SELECTOR
+    # CASE SELECTION
     # =============================
-    st.subheader("Select Case")
+    case_ids = df["ID"].tolist()
 
-    case_map = {
-        f"{row[0]} | {row[1]} | ${row[2]} | {row[4]} | {row[7]}": row
-        for row in cases
-    }
+    selected_id = st.selectbox("Select Case ID", case_ids)
 
-    selected_label = st.selectbox(
-        "Choose a case",
-        list(case_map.keys())
-    )
-
-    selected_case = case_map[selected_label]
-    case_id = selected_case[0]
-
-    st.markdown("---")
+    selected_case = df[df["ID"] == selected_id].iloc[0]
 
     # =============================
     # CASE DETAILS
     # =============================
     st.subheader("Case Details")
 
-    st.write(f"Property: {selected_case[1]}")
-    st.write(f"Amount: ${selected_case[2]}")
-    st.write(f"Risk Score: {selected_case[3]}")
-    st.write(f"Risk Level: {selected_case[4]}")
-    st.write(f"Status: {selected_case[7]}")
-
-    # =============================
-    # STATUS DISPLAY
-    # =============================
-    st.subheader("Current Status")
-
-    status = selected_case[7]
-
-    if status == "OPEN":
-        st.info("🟢 OPEN")
-    elif status == "UNDER_REVIEW":
-        st.warning("🟡 UNDER REVIEW")
-    elif status == "ESCALATED":
-        st.error("🔴 ESCALATED")
-    elif status == "FILED":
-        st.success("✅ FILED")
-    else:
-        st.write(status)
-
-    # =============================
-    # WORKFLOW ACTIONS
-    # =============================
-    st.subheader("Workflow Actions")
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        if st.button("Mark UNDER REVIEW", key=f"review_{case_id}"):
-            update_case_status(case_id, "UNDER_REVIEW")
-            st.success("Status updated")
-            st.rerun()
-
-    with col2:
-        if st.button("ESCALATE", key=f"esc_{case_id}"):
-            update_case_status(case_id, "ESCALATED")
-            st.warning("Case escalated")
-            st.rerun()
-
-    with col3:
-        if st.button("MARK FILED", key=f"file_{case_id}"):
-            update_case_status(case_id, "FILED")
-            st.success("Case filed")
-            st.rerun()
-
-    # =============================
-    # COMPLIANCE REPORTS
-    # =============================
-    st.subheader("Compliance Report")
-
-    if st.button("Generate Compliance Report", key=f"gen_{case_id}"):
-
-        report = generate_smr_report(selected_case)
-
-        save_report(case_id, report)
-
-        st.success("Report generated and saved.")
-
-    reports = get_reports_by_case(case_id)
-
-    if reports:
-
-        latest_report = reports[0][1]
-
-        with st.expander("View Latest Report"):
-            st.text(latest_report)
-
-        # =============================
-        # PDF DOWNLOAD
-        # =============================
-        if st.button("Download PDF", key=f"pdf_{case_id}"):
-
-            buffer = io.BytesIO()
-            doc = SimpleDocTemplate(buffer)
-
-            styles = getSampleStyleSheet()
-            content = []
-
-            for line in latest_report.split("\n"):
-                content.append(Paragraph(line, styles["Normal"]))
-                content.append(Spacer(1, 6))
-
-            doc.build(content)
-
-            st.download_button(
-                "Download Report PDF",
-                buffer.getvalue(),
-                file_name=f"case_{case_id}_compliance_report.pdf",
-                mime="application/pdf"
-            )
-
-    else:
-        st.info("No compliance report generated yet.")
-
-    # =============================
-    # TABLE VIEW
-    # =============================
-    st.markdown("---")
-    st.subheader("All Cases")
-
-    st.dataframe(filtered_df, use_container_width=True)
+    st.write(f"**Property:** {selected_case['Property']}")
+    st.write(f"**Amount:** ${selected_case['Amount']}")
+    st.write(f"**Buyer Name:** {selected_case['Buyer Name']}")
+    st.write(f"**Buyer Type:** {selected_case['Buyer Type']}")
+    st.write(f"**Source of Funds:** {selected_case['Source of Funds']}")
+    st.write(f"**Cash Payment:** {selected_case['Cash Payment']}")
+    st.write(f"**Overseas Funds:** {selected_case['Overseas Funds']}")
+    st.write(f"**PEP:** {selected_case['PEP']}")
+    st.write(f"**Sanctions:** {selected_case['Sanctions']}")
+    st.write(f"**Risk Score:** {selected_case['Risk Score']}")
+    st.write(f"**Risk Level:** {selected_case['Risk Level']}")
+    st.write(f"**Status:** {selected_case['Status']}")
