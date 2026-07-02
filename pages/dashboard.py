@@ -2,9 +2,6 @@ import streamlit as st
 import pandas as pd
 from utils.db import get_cases
 
-import matplotlib.pyplot as plt
-
-
 def show_dashboard():
 
     st.title("Compliance Dashboard")
