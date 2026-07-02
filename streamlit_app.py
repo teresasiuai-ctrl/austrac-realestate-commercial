@@ -1,11 +1,8 @@
 import streamlit as st
 
-from utils.db import init_db
-
 from pages.dashboard import show_dashboard
 from pages.risk_engine import show_risk_engine
 from pages.case_management import show_case_management
-
 
 # =========================
 # PAGE CONFIG
@@ -16,12 +13,12 @@ st.set_page_config(
 )
 
 # =========================
-# INIT DATABASE
+# HEADER
 # =========================
-init_db()
+st.title("AUSTRAC Compliance SaaS Platform")
 
 # =========================
-# SIDEBAR
+# SIDEBAR NAVIGATION
 # =========================
 st.sidebar.title("Navigation")
 
@@ -35,7 +32,7 @@ page = st.sidebar.radio(
 )
 
 # =========================
-# PAGE ROUTER
+# ROUTER
 # =========================
 if page == "Dashboard":
     show_dashboard()
