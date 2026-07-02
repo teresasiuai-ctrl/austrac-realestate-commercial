@@ -26,14 +26,17 @@ def show_dashboard():
         ]
     )
 
-    total_cases = len(df)
-    high_risk = len(df[df["Risk Score"] > 70])
-    open_cases = len(df[df["Case Status"] == "OPEN"])
-    total_amount = df["Amount"].sum()
+    # =========================
+    # KPI METRICS
+    # =========================
+    col1, col2, col3, col4 = st.columns(4)
 
-    st.metric("Total Cases", total_cases)
-    st.metric("High Risk Cases", high_risk)
-    st.metric("Open Cases", open_cases)
-    st.metric("Total Amount", f"${total_amount:,.2f}")
+    col1.metric("Total Cases", len(df))
+    col2.metric("High Risk", len(df[df["Risk Score"] > 70]))
+    col3.metric("Open Cases", len(df[df["Case Status"] == "OPEN"]))
+    col4.metric("Total Amount", f"${df['Amount'].sum():,.2f}")
 
+    st.divider()
+
+    st.subheader("Recent Cases")
     st.dataframe(df, use_container_width=True)
