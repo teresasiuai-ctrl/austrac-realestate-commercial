@@ -68,14 +68,20 @@ source_of_funds = st.selectbox(
         for reason in reasons:
             st.write("•", reason)
 
-        add_case(
-            property_id,
-            amount,
-            score,
-            level,
-            "admin"
-        )
-
+add_case(
+    property_id,
+    amount,
+    buyer_name,
+    buyer_type,
+    source_of_funds,
+    cash_payment,
+    overseas_funds,
+    pep,
+    sanctions,
+    score,
+    level,
+    "admin"
+)
         log_action(
             "admin",
             f"Risk assessment created for {property_id}"
