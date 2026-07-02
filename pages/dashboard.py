@@ -13,92 +13,59 @@ def show_dashboard():
         st.info("No data available yet.")
         return
 
-    # =============================
-    # DATAFRAME
-    # =============================
-    df = pd.DataFrame(cases, columns=[
-        "ID",
-        "Property",
-        "Amount",
-        "Buyer Name",
-        "Buyer Type",
-        "Source of Funds",
-        "Cash Payment",
-        "Overseas Funds",
-        "PEP",
-        "Sanctions",
-        "Risk Score",
-        "Risk Level",
-        "Status"
-    ])
+    # SAFE: auto-handle row length (prevents blank screen crashes)
+    df = pd.DataFrame(cases)
+
+    # Rename only if expected structure exists
+    if df.shape[1] >= 13:
+        df = df.iloc[:, :13]
+        df.columns = [
+            "ID",
+            "Property",
+            "Amount",
+            "Buyer Name",
+            "Buyer Type",
+            "Source of Funds",
+            "Cash Payment",
+            "Overseas Funds",
+            "PEP",
+            "Sanctions",
+            "Risk Score",
+            "Risk Level",
+            "Status"
+        ]
+    else:
+        st.warning("Database schema mismatch detected")
+        st.dataframe(df)
+        return
+
+    # =========================
+    # KPI SECTION
+    # =========================
+    st.subheader("Key Metrics")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric("Total Cases", len(df))
+    col2.metric("High Risk", len(df[df["Risk Level"] == "HIGH"]))
+    col3.metric("Escalated", len(df[df["Status"] == "ESCALATED"]))
+    col4.metric("Filed", len(df[df["Status"] == "FILED"]))
 
     st.markdown("---")
 
-    # =============================
-    # EXECUTIVE KPI SECTION
-    # =============================
-    st.subheader("Executive Overview")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.metric("Total Cases", len(df))
-        st.metric("High Risk Cases", len(df[df["Risk Level"] == "HIGH"]))
-
-    with col2:
-        st.metric("Escalated Cases", len(df[df["Status"] == "ESCALATED"]))
-        st.metric("Filed Cases", len(df[df["Status"] == "FILED"]))
-
-    st.markdown("---")
-
-    # =============================
+    # =========================
     # RISK ANALYSIS
-    # =============================
-    st.subheader("Risk Analysis")
+    # =========================
+    st.subheader("Risk Level Distribution")
+    st.bar_chart(df["Risk Level"].value_counts())
 
-    risk_counts = df["Risk Level"].value_counts()
-
-    col1, col2 = st.columns([1, 2])
-
-    with col1:
-        st.write("Risk Breakdown")
-        st.dataframe(risk_counts)
-
-    with col2:
-        st.bar_chart(risk_counts)
-
-    st.markdown("---")
-
-    # =============================
-    # CASE STATUS ANALYSIS
-    # =============================
     st.subheader("Case Status Breakdown")
+    st.bar_chart(df["Status"].value_counts())
 
-    status_counts = df["Status"].value_counts()
-
-    col1, col2 = st.columns([1, 2])
-
-    with col1:
-        st.write("Status Summary")
-        st.dataframe(status_counts)
-
-    with col2:
-        st.bar_chart(status_counts)
-
-    st.markdown("---")
-
-    # =============================
-    # RISK SCORE DISTRIBUTION
-    # =============================
-    st.subheader("Risk Score Distribution")
-
+    st.subheader("Risk Score Overview")
     st.line_chart(df["Risk Score"])
 
     st.markdown("---")
 
-    # =============================
-    # TABLE VIEW
-    # =============================
-    st.subheader("All Compliance Cases")
-
+    st.subheader("All Cases")
     st.dataframe(df, use_container_width=True)
