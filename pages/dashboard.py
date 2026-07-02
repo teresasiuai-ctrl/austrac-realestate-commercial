@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from utils.db import get_cases
 
+
 def show_dashboard():
 
     st.title("Compliance Dashboard")
@@ -12,9 +13,6 @@ def show_dashboard():
         st.info("No data available yet.")
         return
 
-    # =============================
-    # DATAFRAME (matches your 13-column schema)
-    # =============================
     df = pd.DataFrame(cases, columns=[
         "ID",
         "Property",
@@ -32,7 +30,7 @@ def show_dashboard():
     ])
 
     # =============================
-    # KPIs
+    # KPI SECTION
     # =============================
     st.subheader("Key Metrics")
 
@@ -46,17 +44,12 @@ def show_dashboard():
     st.markdown("---")
 
     # =============================
-    # RISK DISTRIBUTION
+    # RISK LEVEL DISTRIBUTION
     # =============================
     st.subheader("Risk Level Distribution")
 
     risk_counts = df["Risk Level"].value_counts()
-
-    fig1, ax1 = plt.subplots()
-    ax1.pie(risk_counts, labels=risk_counts.index, autopct="%1.1f%%")
-    ax1.axis("equal")
-
-    st.pyplot(fig1)
+    st.bar_chart(risk_counts)
 
     # =============================
     # CASE STATUS BREAKDOWN
@@ -64,21 +57,14 @@ def show_dashboard():
     st.subheader("Case Status Breakdown")
 
     status_counts = df["Status"].value_counts()
-
-    fig2, ax2 = plt.subplots()
-    ax2.bar(status_counts.index, status_counts.values)
-
-    st.pyplot(fig2)
+    st.bar_chart(status_counts)
 
     # =============================
     # RISK SCORE INSIGHT
     # =============================
     st.subheader("Risk Score Overview")
 
-    fig3, ax3 = plt.subplots()
-    ax3.hist(df["Risk Score"], bins=10)
-
-    st.pyplot(fig3)
+    st.line_chart(df["Risk Score"])
 
     # =============================
     # RAW TABLE
