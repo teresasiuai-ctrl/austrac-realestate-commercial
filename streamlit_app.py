@@ -1,12 +1,9 @@
-import os
-
 import streamlit as st
+from utils.db import init_db
 
 from pages.dashboard import show_dashboard
 from pages.risk_engine import show_risk_engine
 from pages.case_management import show_case_management
-
-from utils.db import init_db
 
 # =========================
 # PAGE CONFIG
@@ -16,7 +13,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# INIT DB (IMPORTANT)
+# INIT DATABASE
 init_db()
 
 # =========================
