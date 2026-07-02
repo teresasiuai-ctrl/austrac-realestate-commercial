@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
+
 from utils.db import get_cases
+
 
 def show_dashboard():
 
@@ -18,6 +20,13 @@ def show_dashboard():
             "ID",
             "Property",
             "Amount",
+            "Buyer",
+            "Buyer Type",
+            "Source of Funds",
+            "Cash",
+            "Overseas",
+            "PEP",
+            "Sanctions",
             "Risk Score",
             "Status",
             "Created",
@@ -26,17 +35,20 @@ def show_dashboard():
         ]
     )
 
-    # =========================
-    # KPI METRICS
-    # =========================
+    # KPI
     col1, col2, col3, col4 = st.columns(4)
 
     col1.metric("Total Cases", len(df))
-    col2.metric("High Risk", len(df[df["Risk Score"] > 70]))
+    col2.metric("High Risk", len(df[df["Risk Score"] >= 70]))
     col3.metric("Open Cases", len(df[df["Case Status"] == "OPEN"]))
     col4.metric("Total Amount", f"${df['Amount'].sum():,.2f}")
 
     st.divider()
 
-    st.subheader("Recent Cases")
-    st.dataframe(df, use_container_width=True)
+    st.subheader("Recent Compliance Cases")
+
+    st.dataframe(
+        df,
+        use_container_width=True,
+        hide_index=True
+    )
