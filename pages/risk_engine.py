@@ -10,7 +10,6 @@ def show_risk_engine():
     st.title("AUSTRAC Risk Engine")
 
     property_id = st.text_input("Property Address / ID")
-
     buyer_name = st.text_input("Buyer Name")
 
     amount = st.number_input(
@@ -21,11 +20,7 @@ def show_risk_engine():
 
     buyer_type = st.selectbox(
         "Buyer Type",
-        [
-            "Individual",
-            "Company",
-            "Trust"
-        ]
+        ["Individual", "Company", "Trust"]
     )
 
     source_of_funds = st.selectbox(
@@ -43,11 +38,8 @@ def show_risk_engine():
     )
 
     cash_payment = st.checkbox("Cash payment involved")
-
     overseas_funds = st.checkbox("Overseas source of funds")
-
     pep = st.checkbox("Politically Exposed Person (PEP)")
-
     sanctions = st.checkbox("Potential sanctions match")
 
     if st.button("Assess Risk"):
@@ -74,22 +66,18 @@ def show_risk_engine():
 
         if issues:
             st.warning("Customer Due Diligence Issues")
-
             for issue in issues:
                 st.write(f"• {issue}")
 
         st.metric("Risk Score", score)
-
         st.write("Risk Level:", level)
 
         st.subheader("Risk Factors")
-
         for reason in reasons:
             st.write(f"• {reason}")
 
         try:
-
-            add_case(
+            case_data = (
                 property_id,
                 amount,
                 buyer_name,
@@ -101,8 +89,11 @@ def show_risk_engine():
                 sanctions,
                 score,
                 level,
-                "admin"
+                "admin",
+                "", "", ""   # placeholders for remaining DB columns
             )
+
+            add_case(case_data)
 
             log_action(
                 "admin",
@@ -112,5 +103,4 @@ def show_risk_engine():
             st.success("Case created successfully.")
 
         except Exception as e:
-
             st.error(f"Database Error: {e}")
