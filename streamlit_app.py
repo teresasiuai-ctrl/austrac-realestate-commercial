@@ -267,9 +267,6 @@ if cases:
         step=1
     )
 
-    if st.button("Generate Compliance Report"):
-        st.info("Report generator coming in the next step.")
-
 else:
     st.info("No data available. Run a risk check to populate dashboard.")
     
