@@ -3,6 +3,7 @@ import streamlit as st
 from models.scenarios import calculate_risk
 from utils.db import add_case, log_action
 
+
 def show_risk_engine():
 
     st.title("AUSTRAC Risk Engine")
@@ -11,19 +12,6 @@ def show_risk_engine():
 
     buyer_name = st.text_input("Buyer Name")
 
-    source_of_funds = st.selectbox(
-        "Source of Funds",
-        [
-            "Employment Income",
-            "Savings",
-            "Business Income",
-            "Inheritance",
-            "Gift",
-            "Loan",
-            "Overseas Funds",
-            "Other"
-        ]
-    )
     amount = st.number_input(
         "Transaction Amount",
         min_value=0.0,
@@ -36,6 +24,20 @@ def show_risk_engine():
             "Individual",
             "Company",
             "Trust"
+        ]
+    )
+
+    source_of_funds = st.selectbox(
+        "Source of Funds",
+        [
+            "Employment Income",
+            "Savings",
+            "Business Income",
+            "Inheritance",
+            "Gift",
+            "Loan",
+            "Overseas Funds",
+            "Other"
         ]
     )
 
@@ -67,9 +69,7 @@ def show_risk_engine():
         st.subheader("Risk Factors")
 
         for reason in reasons:
-            st.write("•", reason)
-        for reason in reasons:
-            st.write("•", reason)
+            st.write(f"• {reason}")
 
         add_case(
             property_id,
