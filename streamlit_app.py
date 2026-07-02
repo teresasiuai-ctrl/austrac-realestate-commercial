@@ -34,21 +34,24 @@ with col2:
 
 st.markdown("---")
 
-
 # =========================
 # SIDEBAR NAVIGATION
 # =========================
 st.sidebar.title("Navigation")
 
+st.sidebar.markdown("---")
+
 page = st.sidebar.radio(
-    "Go to",
+    "",
     [
-        "Dashboard",
-        "Risk Engine",
-        "Case Management"
+        "📊 Dashboard",
+        "⚠️ Risk Engine",
+        "📁 Case Management"
     ]
 )
 
+st.sidebar.markdown("---")
+st.sidebar.caption("AUSTRAC Compliance SaaS")
 
 # =========================
 # ROUTER
