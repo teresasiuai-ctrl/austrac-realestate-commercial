@@ -52,7 +52,7 @@ init_db()
 # =========================
 # LOAD LOGO
 # =========================
-logo_path = os.path.join("assets", "logo.png")
+logo_path = "assets/logo.png"
 
 logo = None
 if os.path.exists(logo_path):
