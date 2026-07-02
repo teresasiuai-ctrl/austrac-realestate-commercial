@@ -1,73 +1,70 @@
 import streamlit as st
+
+from models.scenarios import calculate_risk
 from utils.db import add_case, log_action
 
 def show_risk_engine():
 
-    st.title("Risk Engine")
+    st.title("AUSTRAC Risk Engine")
 
-    st.subheader("Create New Transaction Case")
+    property_id = st.text_input("Property Address / ID")
 
-    property_id = st.text_input("Property ID / Address")
-
-    amount = st.number_input("Transaction Amount", min_value=0.0, step=1000.0)
-
-    source_of_funds = st.selectbox(
-        "Source of Funds",
-        ["Verified Salary", "Savings", "Loan", "Unknown", "Overseas Transfer"]
+    amount = st.number_input(
+        "Transaction Amount",
+        min_value=0.0,
+        step=1000.0
     )
 
     buyer_type = st.selectbox(
         "Buyer Type",
-        ["Individual", "Company", "Trust", "SMSF"]
+        [
+            "Individual",
+            "Company",
+            "Trust"
+        ]
     )
 
-    cash_involved = st.checkbox("Cash involved in transaction")
+    cash_payment = st.checkbox("Cash payment involved")
 
-    # =========================
-    # SIMPLE RULE-BASED RISK ENGINE
-    # =========================
-    risk_score = 0
+    overseas_funds = st.checkbox("Overseas source of funds")
 
-    if amount > 1000000:
-        risk_score += 30
+    pep = st.checkbox("Politically Exposed Person (PEP)")
 
-    if source_of_funds in ["Unknown", "Overseas Transfer"]:
-        risk_score += 30
+    sanctions = st.checkbox("Potential sanctions match")
 
-    if buyer_type in ["Company", "Trust", "SMSF"]:
-        risk_score += 20
+    if st.button("Assess Risk"):
 
-    if cash_involved:
-        risk_score += 20
+        data = {
+            "amount": amount,
+            "buyer_type": buyer_type,
+            "cash_payment": cash_payment,
+            "overseas_funds": overseas_funds,
+            "pep": pep,
+            "sanctions": sanctions
+        }
 
-    risk_score = min(risk_score, 100)
+        score, level, reasons = calculate_risk(data)
 
-    st.subheader("Calculated Risk Score")
-    st.metric("Risk Score", risk_score)
+        st.metric("Risk Score", score)
 
-    if risk_score >= 70:
-        status = "HIGH"
-        st.error("High Risk Transaction")
-    elif risk_score >= 40:
-        status = "MEDIUM"
-        st.warning("Medium Risk Transaction")
-    else:
-        status = "LOW"
-        st.success("Low Risk Transaction")
+        st.write("Risk Level:", level)
 
-    # =========================
-    # SAVE CASE
-    # =========================
-    if st.button("Create Case"):
+        st.subheader("Risk Factors")
+
+        for reason in reasons:
+            st.write("•", reason)
 
         add_case(
             property_id,
             amount,
-            risk_score,
-            status,
-            user="admin"
+            score,
+            level,
+            "admin"
         )
 
-        log_action("admin", f"Created case for {property_id}")
+        log_action(
+            "admin",
+            f"Risk assessment created for {property_id}"
+        )
 
-        st.success("Case created successfully")
+        st.success("Case created successfully.")
