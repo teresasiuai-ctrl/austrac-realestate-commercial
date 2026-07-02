@@ -9,62 +9,25 @@ def show_risk_engine():
 
     st.title("AUSTRAC Risk Engine")
 
-    # =============================
-    # INPUT FIELDS
-    # =============================
-    property_id = st.text_input("Property Address / ID")
+    property_id = st.text_input("Property ID")
     buyer_name = st.text_input("Buyer Name")
 
-    amount = st.number_input(
-        "Transaction Amount",
-        min_value=0.0,
-        step=1000.0
-    )
+    amount = st.number_input("Transaction Amount", min_value=0.0, step=1000.0)
 
-    buyer_type = st.selectbox(
-        "Buyer Type",
-        ["Individual", "Company", "Trust"]
-    )
+    buyer_type = st.selectbox("Buyer Type", ["Individual", "Company", "Trust"])
 
     source_of_funds = st.selectbox(
         "Source of Funds",
-        [
-            "Employment Income",
-            "Savings",
-            "Business Income",
-            "Inheritance",
-            "Gift",
-            "Loan",
-            "Overseas Funds",
-            "Other"
-        ]
+        ["Employment Income", "Savings", "Business Income", "Inheritance", "Gift", "Loan", "Overseas Funds", "Other"]
     )
 
-    cash_payment = st.checkbox("Cash payment involved")
-    overseas_funds = st.checkbox("Overseas source of funds")
-    pep = st.checkbox("Politically Exposed Person (PEP)")
-    sanctions = st.checkbox("Potential sanctions match")
+    cash_payment = st.checkbox("Cash Payment")
+    overseas_funds = st.checkbox("Overseas Funds")
+    pep = st.checkbox("PEP")
+    sanctions = st.checkbox("Sanctions Match")
 
-    # =============================
-    # RUN RISK ENGINE
-    # =============================
     if st.button("Assess Risk"):
 
-        # -----------------------------
-        # CDD CHECK
-        # -----------------------------
-        issues = check_cdd({
-            "buyer_name": buyer_name,
-            "property": property_id,
-            "amount": amount,
-            "source_of_funds": source_of_funds,
-            "pep": pep,
-            "sanctions": sanctions
-        })
-
-        # -----------------------------
-        # RISK SCORE
-        # -----------------------------
         data = {
             "amount": amount,
             "buyer_type": buyer_type,
@@ -74,29 +37,30 @@ def show_risk_engine():
             "sanctions": sanctions
         }
 
+        issues = check_cdd({
+            "buyer_name": buyer_name,
+            "property": property_id,
+            "amount": amount,
+            "source_of_funds": source_of_funds,
+            "pep": pep,
+            "sanctions": sanctions
+        })
+
         score, level, reasons = calculate_risk(data)
 
-        # -----------------------------
-        # DISPLAY RESULTS
-        # -----------------------------
         if issues:
-            st.warning("Customer Due Diligence Issues")
-            for issue in issues:
-                st.write(f"• {issue}")
+            st.warning("CDD Issues")
+            for i in issues:
+                st.write("•", i)
 
         st.metric("Risk Score", score)
         st.write("Risk Level:", level)
 
-        st.subheader("Risk Factors")
-        for reason in reasons:
-            st.write(f"• {reason}")
+        for r in reasons:
+            st.write("•", r)
 
-        # =============================
-        # CREATE CASE (DB INSERT)
-        # =============================
         try:
-
-            case_data = (
+            add_case((
                 property_id,
                 amount,
                 buyer_name,
@@ -109,16 +73,10 @@ def show_risk_engine():
                 score,
                 level,
                 "OPEN"
-            )
+            ))
 
-            add_case(case_data)
-
-            log_action(
-                "admin",
-                f"Risk assessment created for {property_id}"
-            )
-
-            st.success("Case created successfully.")
+            log_action("system", f"Case created: {property_id}")
+            st.success("Case created")
 
         except Exception as e:
-            st.error(f"Database Error: {e}")
+            st.error(f"DB Error: {e}")
