@@ -14,9 +14,24 @@ def show_dashboard():
         return
 
     # =========================
-    # STRICT SCHEMA (MATCH CASE MANAGEMENT + RISK ENGINE)
+    # SAFE DATAFRAME (NO FIXED COLUMNS)
     # =========================
-    df = pd.DataFrame(cases, columns=[
+    df = pd.DataFrame(cases)
+
+    # =========================
+    # HANDLE SCHEMA SAFELY
+    # =========================
+    expected_cols = 13
+
+    if df.shape[1] < expected_cols:
+        st.error("Database schema mismatch detected (too few columns).")
+        st.write(df)
+        return
+
+    # Trim extra columns if needed
+    df = df.iloc[:, :expected_cols]
+
+    df.columns = [
         "ID",
         "Property",
         "Amount",
@@ -30,15 +45,7 @@ def show_dashboard():
         "Risk Score",
         "Risk Level",
         "Status"
-    ])
-
-    # =========================
-    # SAFETY CHECK (ONLY VALIDATES, DOES NOT HIDE ERRORS)
-    # =========================
-    if df.shape[1] != 13:
-        st.error("Database schema mismatch detected. Expected 13 columns.")
-        st.write(df)
-        return
+    ]
 
     # =========================
     # KPI SECTION
