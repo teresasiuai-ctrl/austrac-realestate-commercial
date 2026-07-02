@@ -2,7 +2,13 @@ import streamlit as st
 import pandas as pd
 import io
 
-from utils.db import get_cases, save_report, get_reports_by_case
+from utils.db import (
+    get_cases,
+    save_report,
+    get_reports_by_case,
+    update_case_status
+)
+
 from models.compliance_report import generate_smr_report
 
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
@@ -19,9 +25,9 @@ def show_case_management():
         st.info("No cases found.")
         return
 
-    # -----------------------------
+    # =============================
     # SCHEMA VALIDATION (8 columns)
-    # -----------------------------
+    # =============================
     if any(len(c) != 8 for c in cases):
         st.error("Database schema mismatch detected (expected 8 columns).")
         st.write(cases)
@@ -38,9 +44,9 @@ def show_case_management():
         "Status"
     ])
 
-    # -----------------------------
+    # =============================
     # FILTERS
-    # -----------------------------
+    # =============================
     st.sidebar.header("Filters")
 
     status_filter = st.sidebar.selectbox(
@@ -61,9 +67,9 @@ def show_case_management():
     if risk_filter != "All":
         filtered_df = filtered_df[filtered_df["Risk Level"] == risk_filter]
 
-    # -----------------------------
-    # KPI DASHBOARD
-    # -----------------------------
+    # =============================
+    # KPI METRICS
+    # =============================
     col1, col2, col3 = st.columns(3)
 
     col1.metric("Total Cases", len(df))
@@ -72,29 +78,29 @@ def show_case_management():
 
     st.markdown("---")
 
-    # -----------------------------
-    # CASE SELECTION (NEW)
-    # -----------------------------
+    # =============================
+    # CASE SELECTOR
+    # =============================
     st.subheader("Select Case")
 
-    case_options = {
-        f"{row[0]} | {row[1]} | ${row[2]} | {row[4]}": row
+    case_map = {
+        f"{row[0]} | {row[1]} | ${row[2]} | {row[4]} | {row[7]}": row
         for row in cases
     }
 
     selected_label = st.selectbox(
-        "Choose a case to review",
-        list(case_options.keys())
+        "Choose a case",
+        list(case_map.keys())
     )
 
-    selected_case = case_options[selected_label]
+    selected_case = case_map[selected_label]
     case_id = selected_case[0]
 
     st.markdown("---")
 
-    # -----------------------------
+    # =============================
     # CASE DETAILS
-    # -----------------------------
+    # =============================
     st.subheader("Case Details")
 
     st.write(f"Property: {selected_case[1]}")
@@ -103,35 +109,75 @@ def show_case_management():
     st.write(f"Risk Level: {selected_case[4]}")
     st.write(f"Status: {selected_case[7]}")
 
-    # -----------------------------
-    # GENERATE REPORT
-    # -----------------------------
-    if st.button("Generate Compliance Report"):
+    # =============================
+    # STATUS DISPLAY
+    # =============================
+    st.subheader("Current Status")
+
+    status = selected_case[7]
+
+    if status == "OPEN":
+        st.info("🟢 OPEN")
+    elif status == "UNDER_REVIEW":
+        st.warning("🟡 UNDER REVIEW")
+    elif status == "ESCALATED":
+        st.error("🔴 ESCALATED")
+    elif status == "FILED":
+        st.success("✅ FILED")
+    else:
+        st.write(status)
+
+    # =============================
+    # WORKFLOW ACTIONS
+    # =============================
+    st.subheader("Workflow Actions")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        if st.button("Mark UNDER REVIEW", key=f"review_{case_id}"):
+            update_case_status(case_id, "UNDER_REVIEW")
+            st.success("Status updated")
+            st.rerun()
+
+    with col2:
+        if st.button("ESCALATE", key=f"esc_{case_id}"):
+            update_case_status(case_id, "ESCALATED")
+            st.warning("Case escalated")
+            st.rerun()
+
+    with col3:
+        if st.button("MARK FILED", key=f"file_{case_id}"):
+            update_case_status(case_id, "FILED")
+            st.success("Case filed")
+            st.rerun()
+
+    # =============================
+    # COMPLIANCE REPORTS
+    # =============================
+    st.subheader("Compliance Report")
+
+    if st.button("Generate Compliance Report", key=f"gen_{case_id}"):
 
         report = generate_smr_report(selected_case)
 
         save_report(case_id, report)
 
-        st.success("Compliance report generated and saved.")
+        st.success("Report generated and saved.")
 
-    # -----------------------------
-    # LOAD REPORTS
-    # -----------------------------
     reports = get_reports_by_case(case_id)
 
     if reports:
 
         latest_report = reports[0][1]
 
-        st.subheader("Latest Compliance Report")
-
-        with st.expander("View Report"):
+        with st.expander("View Latest Report"):
             st.text(latest_report)
 
-        # -----------------------------
-        # DOWNLOAD PDF
-        # -----------------------------
-        if st.button("Download PDF"):
+        # =============================
+        # PDF DOWNLOAD
+        # =============================
+        if st.button("Download PDF", key=f"pdf_{case_id}"):
 
             buffer = io.BytesIO()
             doc = SimpleDocTemplate(buffer)
@@ -153,11 +199,11 @@ def show_case_management():
             )
 
     else:
-        st.info("No compliance report generated yet for this case.")
+        st.info("No compliance report generated yet.")
 
-    # -----------------------------
-    # FULL TABLE VIEW (existing feature)
-    # -----------------------------
+    # =============================
+    # TABLE VIEW
+    # =============================
     st.markdown("---")
     st.subheader("All Cases")
 
