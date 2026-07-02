@@ -7,7 +7,8 @@ def show_risk_engine():
 
     st.title("AUSTRAC Risk Engine")
 
-    property_id = st.text_input("Property Address / ID")
+property_id = st.text_input("Property Address / ID")
+
 buyer_name = st.text_input("Buyer Name")
 
 source_of_funds = st.selectbox(
@@ -68,20 +69,21 @@ source_of_funds = st.selectbox(
         for reason in reasons:
             st.write("•", reason)
 
-add_case(
-    property_id,
-    amount,
-    buyer_name,
-    buyer_type,
-    source_of_funds,
-    cash_payment,
-    overseas_funds,
-    pep,
-    sanctions,
-    score,
-    level,
-    "admin"
-)
+        add_case(
+            property_id,
+            amount,
+            buyer_name,
+            buyer_type,
+            source_of_funds,
+            cash_payment,
+            overseas_funds,
+            pep,
+            sanctions,
+            score,
+            level,
+            "admin"
+        )
+
         log_action(
             "admin",
             f"Risk assessment created for {property_id}"
