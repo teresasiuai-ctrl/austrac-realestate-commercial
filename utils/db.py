@@ -16,13 +16,20 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             property TEXT,
             amount REAL,
+            buyer_name TEXT,
+            buyer_type TEXT,
+            source_of_funds TEXT,
+            cash_payment INTEGER,
+            overseas_funds INTEGER,
+            pep INTEGER,
+            sanctions INTEGER,
             risk_score INTEGER,
             status TEXT,
             created TEXT,
             user TEXT,
             case_status TEXT
-        )
-    """)
+)
+""")
 
     # AUDIT LOG TABLE (FIXED)
     c.execute("""
