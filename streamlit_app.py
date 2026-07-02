@@ -430,7 +430,7 @@ Generated automatically by the AUSTRAC Compliance SaaS Platform.
         report
     )
 
-       st.success("Compliance report generated.")
+    st.success("Compliance report generated.")
 
     st.text_area(
         "Compliance Report",
