@@ -114,3 +114,57 @@ def get_reports_by_case(case_id):
     rows = c.fetchall()
     conn.close()
     return rows
+# =============================
+# USERS TABLE (MULTI-USER SAAS)
+# =============================
+
+def init_users_table():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            password TEXT,
+            role TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+
+
+def create_user(username, password, role="officer"):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+
+    try:
+        c.execute("""
+            INSERT INTO users (username, password, role)
+            VALUES (?, ?, ?)
+        """, (username, password, role))
+
+        conn.commit()
+
+    except sqlite3.IntegrityError:
+        pass  # user already exists
+
+    conn.close()
+
+
+def authenticate_user(username, password):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+
+    c.execute("""
+        SELECT id, username, role
+        FROM users
+        WHERE username = ? AND password = ?
+    """, (username, password))
+
+    user = c.fetchone()
+    conn.close()
+
+    return user
