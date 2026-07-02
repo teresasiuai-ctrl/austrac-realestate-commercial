@@ -1,18 +1,10 @@
 import streamlit as st
-import os
-from PIL import Image
-import pandas as pd
 
-from utils.auth import authenticate
-from utils.db import (
-    init_db,
-    log_action,
-    add_case,
-    get_cases,
-    get_logs,
-    save_report,
-    get_reports,
-)
+from pages.dashboard import show_dashboard
+from pages.risk_engine import show_risk_engine
+from pages.case_management import show_case_management
+
+from utils.db import init_db
 
 # =========================
 # PAGE CONFIG
@@ -21,10 +13,13 @@ st.set_page_config(
     page_title="AUSTRAC SaaS Platform",
     layout="wide"
 )
-from pages.dashboard import show_dashboard
-from pages.risk_engine import show_risk_engine
-from pages.case_management import show_case_management
 
+# INIT DB (IMPORTANT)
+init_db()
+
+# =========================
+# NAVIGATION
+# =========================
 st.sidebar.title("Navigation")
 
 page = st.sidebar.radio(
