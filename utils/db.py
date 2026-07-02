@@ -69,11 +69,11 @@ def init_reports_table():
     conn.commit()
     conn.close()
 
-
 def save_report(case_id, report_text, created_by="admin"):
     conn = connect()
     c = conn.cursor()
 
+    # allow multiple versions (important upgrade)
     c.execute("""
         INSERT INTO compliance_reports (case_id, report_text, created_by)
         VALUES (?, ?, ?)
@@ -81,7 +81,6 @@ def save_report(case_id, report_text, created_by="admin"):
 
     conn.commit()
     conn.close()
-
 
 def get_reports_by_case(case_id):
     conn = connect()
@@ -97,3 +96,15 @@ def get_reports_by_case(case_id):
     rows = c.fetchall()
     conn.close()
     return rows
+def update_case_status(case_id, status):
+    conn = connect()
+    c = conn.cursor()
+
+    c.execute("""
+        UPDATE cases
+        SET status = ?
+        WHERE id = ?
+    """, (status, case_id))
+
+    conn.commit()
+    conn.close()
