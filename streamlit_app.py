@@ -49,15 +49,6 @@ init_db()
 # etc
 
 # =========================
-# LOAD LOGO
-# =========================
-logo_path = "assets/logo.png"
-
-logo = None
-if os.path.exists(logo_path):
-    logo = Image.open(logo_path)
-    
-# =========================
 # SESSION STATE
 # =========================
 if "auth" not in st.session_state:
