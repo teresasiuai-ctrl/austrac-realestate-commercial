@@ -72,19 +72,51 @@ def log_action(user, action):
 # =========================
 # ADD CASE
 # =========================
-def add_case(property_id, amount, risk_score, status, user):
+def add_case(
+    property_id,
+    amount,
+    buyer_name,
+    buyer_type,
+    source_of_funds,
+    cash_payment,
+    overseas_funds,
+    pep,
+    sanctions,
+    risk_score,
+    status,
+    user
+):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
 
     c.execute("""
         INSERT INTO cases (
-            property, amount, risk_score,
-            status, created, user, case_status
+            property,
+            amount,
+            buyer_name,
+            buyer_type,
+            source_of_funds,
+            cash_payment,
+            overseas_funds,
+            pep,
+            sanctions,
+            risk_score,
+            status,
+            created,
+            user,
+            case_status
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         property_id,
         amount,
+        buyer_name,
+        buyer_type,
+        source_of_funds,
+        int(cash_payment),
+        int(overseas_funds),
+        int(pep),
+        int(sanctions),
         risk_score,
         status,
         datetime.now().isoformat(),
