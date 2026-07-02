@@ -400,7 +400,10 @@ with tab3:
             "Select Case",
             df["ID"].tolist()
         )
-
+        
+        if st.button("Generate Compliance Report"):
+            st.success(f"Generating report for Case #{selected_case}")
+    
     else:
         st.info("No cases yet. Run a risk check first.")
 
