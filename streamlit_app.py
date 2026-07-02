@@ -14,6 +14,11 @@ st.set_page_config(
 )
 
 # =========================
+# INITIALISE DATABASE TABLES
+# =========================
+init_reports_table()
+
+# =========================
 # HEADER
 # =========================
 st.title("AUSTRAC Compliance SaaS Platform")
