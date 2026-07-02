@@ -12,42 +12,28 @@ def show_case_management():
         st.info("No cases found.")
         return
 
-    cleaned_cases = []
-
-    for c in cases:
-
-        # Your actual DB format (15 columns)
-        if isinstance(c, (list, tuple)) and len(c) >= 15:
-
-            cleaned_cases.append([
-                c[0],   # ID
-                c[1],   # Property
-                c[2],   # Amount
-                c[3],   # Customer Name
-                c[4],   # Ownership Type
-                c[5],   # Funding Source
-                c[10],  # Risk Score
-                c[11],  # Risk Level
-                c[12],  # Created
-                c[13],  # User
-                c[14],  # Status
-            ])
-
-        else:
-            continue
-
-    if not cleaned_cases:
-        st.warning("Data format mismatch. Raw output below:")
+    # -----------------------------
+    # Safety check (prevents silent breakage)
+    # -----------------------------
+    if any(len(c) != 15 for c in cases):
+        st.error("Database schema mismatch detected (expected 15 columns per row).")
         st.write(cases)
         return
 
-    df = pd.DataFrame(cleaned_cases, columns=[
+    # -----------------------------
+    # Build DataFrame (stable mapping)
+    # -----------------------------
+    df = pd.DataFrame(cases, columns=[
         "ID",
         "Property",
         "Amount",
         "Customer Name",
         "Ownership Type",
         "Funding Source",
+        "Flag 1",
+        "Flag 2",
+        "Flag 3",
+        "Flag 4",
         "Risk Score",
         "Risk Level",
         "Created",
@@ -55,4 +41,7 @@ def show_case_management():
         "Status"
     ])
 
+    # -----------------------------
+    # Display table
+    # -----------------------------
     st.dataframe(df, use_container_width=True)
