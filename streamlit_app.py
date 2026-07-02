@@ -3,6 +3,7 @@ import streamlit as st
 from pages.dashboard import show_dashboard
 from pages.risk_engine import show_risk_engine
 from pages.case_management import show_case_management
+from utils.db import init_reports_table
 
 # =========================
 # PAGE CONFIG
