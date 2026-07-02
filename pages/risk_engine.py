@@ -9,6 +9,9 @@ def show_risk_engine():
 
     st.title("AUSTRAC Risk Engine")
 
+    # =============================
+    # INPUT FIELDS
+    # =============================
     property_id = st.text_input("Property Address / ID")
     buyer_name = st.text_input("Buyer Name")
 
@@ -42,17 +45,14 @@ def show_risk_engine():
     pep = st.checkbox("Politically Exposed Person (PEP)")
     sanctions = st.checkbox("Potential sanctions match")
 
+    # =============================
+    # RUN RISK ENGINE
+    # =============================
     if st.button("Assess Risk"):
 
-        data = {
-            "amount": amount,
-            "buyer_type": buyer_type,
-            "cash_payment": cash_payment,
-            "overseas_funds": overseas_funds,
-            "pep": pep,
-            "sanctions": sanctions
-        }
-
+        # -----------------------------
+        # CDD CHECK
+        # -----------------------------
         issues = check_cdd({
             "buyer_name": buyer_name,
             "property": property_id,
@@ -62,8 +62,23 @@ def show_risk_engine():
             "sanctions": sanctions
         })
 
+        # -----------------------------
+        # RISK SCORE
+        # -----------------------------
+        data = {
+            "amount": amount,
+            "buyer_type": buyer_type,
+            "cash_payment": cash_payment,
+            "overseas_funds": overseas_funds,
+            "pep": pep,
+            "sanctions": sanctions
+        }
+
         score, level, reasons = calculate_risk(data)
 
+        # -----------------------------
+        # DISPLAY RESULTS
+        # -----------------------------
         if issues:
             st.warning("Customer Due Diligence Issues")
             for issue in issues:
@@ -76,7 +91,11 @@ def show_risk_engine():
         for reason in reasons:
             st.write(f"• {reason}")
 
+        # =============================
+        # CREATE CASE (DB INSERT)
+        # =============================
         try:
+
             case_data = (
                 property_id,
                 amount,
@@ -89,8 +108,7 @@ def show_risk_engine():
                 sanctions,
                 score,
                 level,
-                "admin",
-                "", "", ""   # placeholders for remaining DB columns
+                "OPEN"
             )
 
             add_case(case_data)
