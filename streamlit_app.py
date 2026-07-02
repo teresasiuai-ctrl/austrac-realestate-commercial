@@ -1,3 +1,5 @@
+import os
+
 import streamlit as st
 
 from pages.dashboard import show_dashboard
