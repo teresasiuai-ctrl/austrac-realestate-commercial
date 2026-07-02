@@ -13,6 +13,9 @@ def show_dashboard():
         st.info("No data available yet.")
         return
 
+    # =============================
+    # DATAFRAME
+    # =============================
     df = pd.DataFrame(cases, columns=[
         "ID",
         "Property",
@@ -29,47 +32,73 @@ def show_dashboard():
         "Status"
     ])
 
-    # =============================
-    # KPI SECTION
-    # =============================
-    st.subheader("Key Metrics")
+    st.markdown("---")
 
-    col1, col2, col3, col4 = st.columns(4)
+    # =============================
+    # EXECUTIVE KPI SECTION
+    # =============================
+    st.subheader("Executive Overview")
 
-    col1.metric("Total Cases", len(df))
-    col2.metric("High Risk", len(df[df["Risk Level"] == "HIGH"]))
-    col3.metric("Escalated", len(df[df["Status"] == "ESCALATED"]))
-    col4.metric("Filed", len(df[df["Status"] == "FILED"]))
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.metric("Total Cases", len(df))
+        st.metric("High Risk Cases", len(df[df["Risk Level"] == "HIGH"]))
+
+    with col2:
+        st.metric("Escalated Cases", len(df[df["Status"] == "ESCALATED"]))
+        st.metric("Filed Cases", len(df[df["Status"] == "FILED"]))
 
     st.markdown("---")
 
     # =============================
-    # RISK LEVEL DISTRIBUTION
+    # RISK ANALYSIS
     # =============================
-    st.subheader("Risk Level Distribution")
+    st.subheader("Risk Analysis")
 
     risk_counts = df["Risk Level"].value_counts()
-    st.bar_chart(risk_counts)
+
+    col1, col2 = st.columns([1, 2])
+
+    with col1:
+        st.write("Risk Breakdown")
+        st.dataframe(risk_counts)
+
+    with col2:
+        st.bar_chart(risk_counts)
+
+    st.markdown("---")
 
     # =============================
-    # CASE STATUS BREAKDOWN
+    # CASE STATUS ANALYSIS
     # =============================
     st.subheader("Case Status Breakdown")
 
     status_counts = df["Status"].value_counts()
-    st.bar_chart(status_counts)
+
+    col1, col2 = st.columns([1, 2])
+
+    with col1:
+        st.write("Status Summary")
+        st.dataframe(status_counts)
+
+    with col2:
+        st.bar_chart(status_counts)
+
+    st.markdown("---")
 
     # =============================
-    # RISK SCORE INSIGHT
+    # RISK SCORE DISTRIBUTION
     # =============================
-    st.subheader("Risk Score Overview")
+    st.subheader("Risk Score Distribution")
 
     st.line_chart(df["Risk Score"])
 
-    # =============================
-    # RAW TABLE
-    # =============================
     st.markdown("---")
-    st.subheader("All Cases")
+
+    # =============================
+    # TABLE VIEW
+    # =============================
+    st.subheader("All Compliance Cases")
 
     st.dataframe(df, use_container_width=True)
