@@ -430,14 +430,23 @@ Generated automatically by the AUSTRAC Compliance SaaS Platform.
         report
     )
 
-    st.success("Compliance report generated.")
+       st.success("Compliance report generated.")
 
     st.text_area(
         "Compliance Report",
         report,
         height=350
     )
-    
+
+    reports = get_reports(selected["ID"])
+
+    if reports:
+        st.subheader("Previous Reports")
+
+        for i, r in enumerate(reports, start=1):
+            with st.expander(f"Report {i} - {r[4] if len(r) > 4 else 'Saved'}"):
+                st.text(r[3] if len(r) > 3 else r[2])
+
     else:
         st.info("No cases yet. Run a risk check first.")
 
