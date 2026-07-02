@@ -1,6 +1,7 @@
 import streamlit as st
 
 from models.scenarios import calculate_risk
+from models.customer_due_diligence import check_cdd
 from utils.db import add_case, log_action
 
 
@@ -60,7 +61,22 @@ def show_risk_engine():
             "sanctions": sanctions
         }
 
+        issues = check_cdd({
+            "buyer_name": buyer_name,
+            "property": property_id,
+            "amount": amount,
+            "source_of_funds": source_of_funds,
+            "pep": pep,
+            "sanctions": sanctions
+        })
+
         score, level, reasons = calculate_risk(data)
+
+        if issues:
+            st.warning("Customer Due Diligence Issues")
+
+            for issue in issues:
+                st.write(f"• {issue}")
 
         st.metric("Risk Score", score)
 
