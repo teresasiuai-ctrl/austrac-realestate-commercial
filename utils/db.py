@@ -3,11 +3,18 @@ import sqlite3
 DB_NAME = "app.db"
 
 
-# -----------------------------
-# GET CASES
-# -----------------------------
+# =============================
+# CONNECTION HELPERS
+# =============================
+def connect():
+    return sqlite3.connect(DB_NAME)
+
+
+# =============================
+# CASES
+# =============================
 def get_cases():
-    conn = sqlite3.connect(DB_NAME)
+    conn = connect()
     c = conn.cursor()
 
     c.execute("SELECT * FROM cases")
@@ -17,15 +24,12 @@ def get_cases():
     return rows
 
 
-# -----------------------------
-# ADD CASE (SAFE INSERT)
-# -----------------------------
 def add_case(case_data):
     """
-    Expects full 15-column format (your current DB structure)
+    Expects tuple/list matching your 15-column schema (excluding ID)
     """
 
-    conn = sqlite3.connect(DB_NAME)
+    conn = connect()
     c = conn.cursor()
 
     c.execute("""
@@ -38,22 +42,18 @@ def add_case(case_data):
     conn.close()
 
 
-# -----------------------------
-# LOG ACTION (SIMPLE VERSION)
-# -----------------------------
-def log_action(action, user="system"):
-    """
-    Lightweight logger (no separate table required yet)
-    """
-
+# =============================
+# AUDIT LOG (simple)
+# =============================
+def log_action(user, action):
     print(f"[AUDIT LOG] {user}: {action}")
 
-# -----------------------------
-# COMPLIANCE REPORTS (NEW)
-# -----------------------------
 
+# =============================
+# COMPLIANCE REPORTS
+# =============================
 def init_reports_table():
-    conn = sqlite3.connect(DB_NAME)
+    conn = connect()
     c = conn.cursor()
 
     c.execute("""
@@ -71,7 +71,7 @@ def init_reports_table():
 
 
 def save_report(case_id, report_text, created_by="admin"):
-    conn = sqlite3.connect(DB_NAME)
+    conn = connect()
     c = conn.cursor()
 
     c.execute("""
@@ -84,7 +84,7 @@ def save_report(case_id, report_text, created_by="admin"):
 
 
 def get_reports_by_case(case_id):
-    conn = sqlite3.connect(DB_NAME)
+    conn = connect()
     c = conn.cursor()
 
     c.execute("""
@@ -97,4 +97,3 @@ def get_reports_by_case(case_id):
     rows = c.fetchall()
     conn.close()
     return rows
-    
