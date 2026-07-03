@@ -1,6 +1,10 @@
-flask
 streamlit
-openai
+pandas
+sqlite3
+bcrypt
+google-generativeai
 python-dotenv
-requests
 reportlab
+openpyxl
+plotly
+numpy
