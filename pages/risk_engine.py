@@ -1,98 +1,126 @@
-import streamlit as st
+# Replace File: pages/risk_engine.py
 
-from models.scenarios import calculate_risk
-from models.customer_due_diligence import check_cdd
-from utils.db import add_case, log_action
+## Objective
 
+Replace the entire file with a production-ready AI-powered Risk Assessment Engine for the AUSTRAC Real Estate Compliance SaaS Platform.
 
-def show_risk_engine():
+## Layout
 
-    st.title("AUSTRAC Risk Engine")
+Create a responsive interface for desktop, tablet and mobile.
 
-    property_id = st.text_input("Property ID")
-    buyer_name = st.text_input("Buyer Name")
+## Transaction Details
 
-    amount = st.number_input("Transaction Amount", min_value=0.0, step=1000.0)
+Collect:
 
-    buyer_type = st.selectbox(
-        "Buyer Type",
-        ["Individual", "Company", "Trust"]
-    )
+- Property ID
+- Property Address
+- Purchase Price
+- Deposit Amount
+- Cash Contribution
+- Settlement Date
 
-    source_of_funds = st.selectbox(
-        "Source of Funds",
-        [
-            "Employment Income",
-            "Savings",
-            "Business Income",
-            "Inheritance",
-            "Gift",
-            "Loan",
-            "Overseas Funds",
-            "Other"
-        ]
-    )
+## Buyer Details
 
-    cash_payment = st.checkbox("Cash Payment")
-    overseas_funds = st.checkbox("Overseas Funds")
-    pep = st.checkbox("PEP")
-    sanctions = st.checkbox("Sanctions Match")
+Collect:
 
-    if st.button("Assess Risk"):
+- Buyer Name
+- Buyer Type
+- Foreign Buyer
+- Country
+- Politically Exposed Person (PEP)
+- Sanctions Match
 
-        data = {
-            "amount": amount,
-            "buyer_type": buyer_type,
-            "cash_payment": cash_payment,
-            "overseas_funds": overseas_funds,
-            "pep": pep,
-            "sanctions": sanctions
-        }
+## Ownership Details
 
-        issues = check_cdd({
-            "buyer_name": buyer_name,
-            "property": property_id,
-            "amount": amount,
-            "source_of_funds": source_of_funds,
-            "pep": pep,
-            "sanctions": sanctions
-        })
+Collect:
 
-        score, level, reasons = calculate_risk(data)
+- Trust Purchase
+- Company Purchase
+- Beneficial Ownership Confirmed
+- Third-Party Payment
 
-        if issues:
-            st.warning("CDD Issues Found")
-            for i in issues:
-                st.write("•", i)
+## Source of Funds
 
-        st.metric("Risk Score", score)
-        st.write("Risk Level:", level)
+Collect:
 
-        for r in reasons:
-            st.write("•", r)
+- Source of Funds
+- Source of Wealth
+- Overseas Funds
+- Cryptocurrency Payment
 
-        try:
-            # =============================
-            # FIXED CASE STRUCTURE (MATCH DB + DASHBOARD)
-            # =============================
-            add_case((
-                property_id,
-                amount,
-                buyer_name,
-                buyer_type,
-                source_of_funds,
-                cash_payment,
-                overseas_funds,
-                pep,
-                sanctions,
-                score,
-                level,
-                "OPEN"
-            ))
+## Risk Assessment
 
-            log_action("system", f"Case created for {property_id}")
+Provide:
 
-            st.success("Case created successfully.")
+- Calculate Risk button
+- AI Risk Assessment
+- Rule-based fallback
+- Risk Score (0–100)
+- Risk Level (LOW, MEDIUM, HIGH, EXTREME)
+- Risk Reasons
+- AML/CTF Indicators
+- Recommendations
 
-        except Exception as e:
-            st.error(f"Database Error: {e}")
+## Customer Due Diligence
+
+Integrate with customer_due_diligence.py.
+
+Display:
+
+- Due Diligence Level
+- Required Documents
+- Missing Information
+- Enhanced Due Diligence recommendations
+
+## Actions
+
+Provide buttons to:
+
+- Save Case
+- Generate AUSTRAC Report
+- View Case Management
+- Start New Assessment
+
+## Voice Features
+
+Include:
+
+- Voice input
+- Speak assessment results
+- Mobile-compatible speech support
+
+## AI Integration
+
+Use utils/ai.py.
+
+Automatically switch to rule-based assessment if AI is unavailable.
+
+## Error Handling
+
+Validate all user input.
+
+Never crash if AI is unavailable.
+
+## Compatibility
+
+Compatible with:
+
+- utils/db.py
+- utils/ai.py
+- customer_due_diligence.py
+- scenarios.py
+- compliance_report.py
+
+## Code Standards
+
+- Production-ready Python
+- Responsive
+- Modular
+- Well documented
+- No placeholder code
+- No TODO comments
+- Commercial SaaS quality
+
+## Deliverable
+
+Return one complete production-ready replacement for pages/risk_engine.py.
