@@ -1,82 +1,114 @@
-import streamlit as st
-import pandas as pd
-from utils.db import get_cases
+# Replace File: pages/dashboard.py
 
+## Objective
 
-def show_dashboard():
+Replace the entire file with a production-ready executive compliance dashboard for the AUSTRAC Real Estate Compliance SaaS Platform.
 
-    st.title("Compliance Dashboard")
+## Dashboard Layout
 
-    cases = get_cases()
+Create a responsive dashboard suitable for desktop, tablet and mobile.
 
-    if not cases:
-        st.info("No data available yet.")
-        return
+Display professional KPI cards.
 
-    # =========================
-    # SAFE DATAFRAME (NO FIXED COLUMNS)
-    # =========================
-    df = pd.DataFrame(cases)
+## KPI Cards
 
-    # =========================
-    # HANDLE SCHEMA SAFELY
-    # =========================
-    expected_cols = 13
+Display:
 
-    if df.shape[1] < expected_cols:
-        st.error("Database schema mismatch detected (too few columns).")
-        st.write(df)
-        return
+- Total Cases
+- Open Cases
+- High Risk Cases
+- Extreme Risk Cases
+- Closed Cases
+- Reports Generated
+- Average Risk Score
+- AI Assessments Completed
 
-    # Trim extra columns if needed
-    df = df.iloc[:, :expected_cols]
+## Charts
 
-    df.columns = [
-        "ID",
-        "Property",
-        "Amount",
-        "Buyer Name",
-        "Buyer Type",
-        "Source of Funds",
-        "Cash Payment",
-        "Overseas Funds",
-        "PEP",
-        "Sanctions",
-        "Risk Score",
-        "Risk Level",
-        "Status"
-    ]
+Include interactive charts for:
 
-    # =========================
-    # KPI SECTION
-    # =========================
-    st.subheader("Key Metrics")
+- Risk Level Distribution
+- Case Status Distribution
+- Monthly Risk Trend
+- Cases by Buyer Type
+- Cases by Source of Funds
+- High-Risk Jurisdictions
+- AI vs Rule-Based Assessments
 
-    col1, col2, col3, col4 = st.columns(4)
+## Recent Activity
 
-    col1.metric("Total Cases", len(df))
-    col2.metric("High Risk", len(df[df["Risk Level"] == "HIGH"]))
-    col3.metric("Escalated", len(df[df["Status"] == "ESCALATED"]))
-    col4.metric("Filed", len(df[df["Status"] == "FILED"]))
+Display:
 
-    st.markdown("---")
+- Recent Cases
+- Recent Reports
+- Recent Audit Log
 
-    # =========================
-    # RISK ANALYSIS
-    # =========================
-    st.subheader("Risk Level Distribution")
-    st.bar_chart(df["Risk Level"].value_counts())
+## Search
 
-    st.subheader("Case Status Breakdown")
-    st.bar_chart(df["Status"].value_counts())
+Support searching by:
 
-    st.subheader("Risk Score Overview")
-    st.line_chart(df["Risk Score"])
+- Property
+- Buyer
+- Address
+- Case ID
 
-    st.markdown("---")
+## Filters
 
-    # =========================
-    # TABLE VIEW
-    # =========================
-    st.subheader("All Cases")
-    st.dataframe(df, use_container_width=True)
+Support filtering by:
+
+- Risk Level
+- Status
+- Date
+- Buyer Type
+
+## Quick Actions
+
+Provide buttons for:
+
+- New Risk Assessment
+- Customer Due Diligence
+- Generate AUSTRAC Report
+- View Case Management
+
+## AI Executive Summary
+
+Use utils/ai.py.
+
+Generate an executive compliance summary.
+
+Automatically fall back to rule-based summaries if AI is unavailable.
+
+## Voice Features
+
+Include:
+
+- Speak dashboard summary
+- Mobile-compatible text-to-speech
+
+## Error Handling
+
+Never fail if no data exists.
+
+Display meaningful empty-state messages.
+
+## Compatibility
+
+Compatible with:
+
+- utils/db.py
+- utils/ai.py
+- streamlit_app.py
+
+## Code Standards
+
+- Production-ready Python
+- Responsive layout
+- Modular
+- Well documented
+- No placeholder code
+- No TODO comments
+- Commercial SaaS quality
+
+## Deliverable
+
+Return one complete production-ready replacement for pages/dashboard.py.
