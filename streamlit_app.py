@@ -1,68 +1,148 @@
-import streamlit as st
+# Replace File: streamlit_app.py
 
-from pages.dashboard import show_dashboard
-from pages.risk_engine import show_risk_engine
-from pages.case_management import show_case_management
-from utils.db import init_reports_table, init_users_table
+## Objective
 
+Replace the entire file with the main application entry point for the AUSTRAC Real Estate Compliance SaaS Platform.
 
-# =========================
-# PAGE CONFIG
-# =========================
-st.set_page_config(
-    page_title="AUSTRAC Compliance SaaS Platform",
-    layout="wide"
-)
+This file will initialise the application, configure Streamlit, initialise the database, manage authentication, provide responsive navigation, and route users to all application modules.
 
+## Page Configuration
 
-# =========================
-# INIT DATABASE (SAFE STARTUP)
-# =========================
-init_reports_table()
-init_users_table()
+Configure:
 
+- Wide layout
+- Responsive desktop and mobile support
+- AUSTRAC Compliance SaaS Platform page title
+- Custom logo from assets/logo.png
+- Professional page icon
+- Expanded sidebar by default
 
-# =========================
-# HEADER WITH LOGO
-# =========================
-col1, col2 = st.columns([1, 6])
+## Application Startup
 
-with col1:
-    st.image("assets/logo.png", width=80)
+On startup:
 
-with col2:
-    st.title("AUSTRAC Compliance SaaS Platform")
-    st.caption("Compliance Risk & Reporting System")
+- Initialise the database using utils/db.py
+- Initialise required tables
+- Initialise default administrator account if none exists
+- Load application configuration
+- Configure session state
+- Configure logging
 
-st.markdown("---")
+## Authentication
 
+Integrate with utils/auth.py.
 
-# =========================
-# SIDEBAR NAVIGATION
-# =========================
-st.sidebar.title("Navigation")
+Support:
 
-page = st.sidebar.radio(
-    "Go to",
-    [
-        "Dashboard",
-        "Risk Engine",
-        "Case Management"
-    ]
-)
+- Login
+- Logout
+- Session persistence
+- Role-based navigation
 
-st.sidebar.markdown("---")
-st.sidebar.caption("AUSTRAC Compliance SaaS")
+Display login page until authentication succeeds.
 
+## Sidebar Navigation
 
-# =========================
-# ROUTER (SAFE + STABLE)
-# =========================
-if page == "Dashboard":
-    show_dashboard()
+Include:
 
-elif page == "Risk Engine":
-    show_risk_engine()
+- Dashboard
+- Risk Engine
+- Case Management
+- Customer Due Diligence
+- Risk Scenarios
+- AUSTRAC Reports
 
-elif page == "Case Management":
-    show_case_management()
+Display current user information.
+
+Display logout button.
+
+## Routing
+
+Route each menu item to the correct module.
+
+Do not place business logic inside streamlit_app.py.
+
+Each page must be responsible only for its own interface.
+
+## Dashboard
+
+Display the dashboard module.
+
+## Risk Engine
+
+Display the risk assessment module.
+
+Support:
+
+- AI risk assessment
+- Voice input
+- Speak results
+- Save case
+- Generate report
+
+## Case Management
+
+Display:
+
+- Case list
+- Search
+- Filters
+- Case details
+- Update status
+- Export
+
+## Customer Due Diligence
+
+Display the CDD module.
+
+## Risk Scenarios
+
+Display the scenario library.
+
+Allow loading demonstration scenarios directly into the Risk Engine.
+
+## AUSTRAC Reports
+
+Display report generation and report history.
+
+## Mobile Support
+
+Provide responsive layouts for:
+
+- Desktop
+- Tablet
+- Mobile
+
+## Error Handling
+
+Provide user-friendly error pages.
+
+Never display raw exceptions.
+
+## Compatibility
+
+Fully compatible with:
+
+- utils/db.py
+- utils/auth.py
+- utils/ai.py
+- dashboard.py
+- risk_engine.py
+- case_management.py
+- customer_due_diligence.py
+- scenarios.py
+- compliance_report.py
+
+## Code Standards
+
+- Production-ready Python
+- Modular
+- Clean architecture
+- Well documented
+- No placeholder code
+- No TODO comments
+- Commercial SaaS quality
+
+## Deliverable
+
+Return one complete production-ready replacement for streamlit_app.py.
