@@ -1,170 +1,171 @@
-import sqlite3
+# Replace File: utils/db.py
 
-DB_NAME = "app.db"
+## Objective
 
+Replace the entire file with a production-ready SQLite database module for the AUSTRAC Real Estate Compliance SaaS Platform.
 
-# =============================
-# CONNECTION
-# =============================
-def connect():
-    return sqlite3.connect(DB_NAME)
+This will become the single database layer used by every module in the application.
 
+## Database
 
-# =============================
-# CASES
-# =============================
-def get_cases():
-    conn = connect()
-    c = conn.cursor()
+Database filename:
 
-    c.execute("SELECT * FROM cases")
-    rows = c.fetchall()
+app.db
 
-    conn.close()
-    return rows
+Automatically create the database and all tables if they do not already exist.
 
+Implement a single initialization function named:
 
-def add_case(case_data):
-    """
-    EXPECTS 12 values (excluding ID)
-    """
+init_db()
 
-    conn = connect()
-    c = conn.cursor()
+which safely creates every table using CREATE TABLE IF NOT EXISTS.
 
-    c.execute("""
-        INSERT INTO cases VALUES (
-            NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-        )
-    """, case_data)
+## Tables
 
-    conn.commit()
-    conn.close()
+### cases
 
+Include fields for:
 
-# =============================
-# STATUS UPDATE
-# =============================
-def update_case_status(case_id, status):
-    conn = connect()
-    c = conn.cursor()
+- id
+- property_id
+- property_address
+- buyer_name
+- buyer_type
+- seller_name
+- purchase_price
+- deposit_amount
+- cash_payment
+- source_of_funds
+- source_of_wealth
+- overseas_funds
+- foreign_buyer
+- pep
+- sanctions
+- trust_purchase
+- company_purchase
+- crypto_payment
+- third_party_payment
+- settlement_date
+- country
+- risk_score
+- risk_level
+- ai_summary
+- status
+- assigned_to
+- notes
+- created_at
+- updated_at
 
-    c.execute("""
-        UPDATE cases
-        SET status = ?
-        WHERE id = ?
-    """, (status, case_id))
+### compliance_reports
 
-    conn.commit()
-    conn.close()
+Include:
 
+- id
+- case_id
+- report_type
+- report_text
+- created_by
+- created_at
 
-# =============================
-# AUDIT LOG (simple)
-# =============================
-def log_action(user, action):
-    print(f"[AUDIT] {user}: {action}")
+### audit_log
 
+Include:
 
-# =============================
-# COMPLIANCE REPORTS
-# =============================
-def init_reports_table():
-    conn = connect()
-    c = conn.cursor()
+- id
+- username
+- action
+- details
+- created_at
 
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS compliance_reports (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            case_id INTEGER,
-            report_text TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            created_by TEXT
-        )
-    """)
+### users
 
-    conn.commit()
-    conn.close()
+Include:
 
+- id
+- username
+- password
+- full_name
+- email
+- role
+- active
+- created_at
 
-def save_report(case_id, report_text, created_by="admin"):
-    conn = connect()
-    c = conn.cursor()
+## CRUD Functions
 
-    c.execute("""
-        INSERT INTO compliance_reports (case_id, report_text, created_by)
-        VALUES (?, ?, ?)
-    """, (case_id, report_text, created_by))
+Implement reusable functions including:
 
-    conn.commit()
-    conn.close()
+- connect()
+- init_db()
 
+Cases
 
-def get_reports_by_case(case_id):
-    conn = connect()
-    c = conn.cursor()
+- add_case()
+- get_cases()
+- get_case()
+- update_case()
+- update_case_status()
+- delete_case()
 
-    c.execute("""
-        SELECT id, report_text, created_at
-        FROM compliance_reports
-        WHERE case_id = ?
-        ORDER BY created_at DESC
-    """, (case_id,))
+Reports
 
-    rows = c.fetchall()
-    conn.close()
-    return rows
-# =============================
-# USERS TABLE (MULTI-USER SAAS)
-# =============================
+- save_report()
+- get_reports()
+- get_reports_by_case()
 
-def init_users_table():
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
+Audit
 
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE,
-            password TEXT,
-            role TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
+- log_action()
+- get_audit_log()
 
-    conn.commit()
-    conn.close()
+Users
 
+- create_user()
+- authenticate_user()
+- get_users()
+- update_user()
+- delete_user()
 
-def create_user(username, password, role="officer"):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
+## Error Handling
 
-    try:
-        c.execute("""
-            INSERT INTO users (username, password, role)
-            VALUES (?, ?, ?)
-        """, (username, password, role))
+Include:
 
-        conn.commit()
+- input validation
+- sqlite exception handling
+- logging
+- automatic connection closing
+- graceful failures
 
-    except sqlite3.IntegrityError:
-        pass  # user already exists
+## Performance
 
-    conn.close()
+Use:
 
+- context managers where appropriate
+- parameterized SQL
+- reusable helper functions
 
-def authenticate_user(username, password):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
+## Compatibility
 
-    c.execute("""
-        SELECT id, username, role
-        FROM users
-        WHERE username = ? AND password = ?
-    """, (username, password))
+Fully compatible with:
 
-    user = c.fetchone()
-    conn.close()
+- streamlit_app.py
+- dashboard.py
+- risk_engine.py
+- case_management.py
+- customer_due_diligence.py
+- compliance_report.py
+- scenarios.py
+- utils/ai.py
 
-    return user
+## Code Standards
+
+- Production-ready Python
+- Fully documented
+- Modular
+- Clean architecture
+- No placeholder code
+- No TODO comments
+- Commercial SaaS quality
+
+## Deliverable
+
+Return one complete production-ready replacement for utils/db.py.
